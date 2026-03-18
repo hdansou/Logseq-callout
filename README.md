@@ -27,7 +27,19 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 | `#summary`   | Summary  | list             | teal   |
 | `#tldr`      | TLDR     | bolt             | teal   |
 | `#important` | Important| urgent           | red    |
+| `#danger`    | Danger   | alert-octagon    | red    |
 | `#tip`       | Tip      | bulb             | orange |
+| `#note`      | Note     | pencil           | blue   |
+| `#example`   | Example  | code             | purple |
+| `#src`       | Src      | code             | teal   |
+| `#query`     | Query    | search           | blue   |
+| `#latex`     | LaTeX    | math             | purple |
+| `#pinned`    | Pinned   | pin              | orange |
+| `#export`    | Export   | file-export      | teal   |
+| `#verse`     | Verse    | blockquote       | purple |
+| `#ascii`     | Ascii    | terminal         | teal   |
+| `#center`    | Center   | align-center     | blue   |
+| `#comment`   | Comment  | message          | blue   |
 
 ### Display Modes
 

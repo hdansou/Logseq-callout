@@ -106,6 +106,16 @@ export const TABLER_ICON_CODES: Record<string, string> = {
   'bolt':             'ea38',
   'urgent':           'f0cd',
   'bulb':             'ea3c',
+  'pencil':           'eb04',
+  'alert-octagon':    'ecc6',
+  'code':             'ea77',
+  'search':           'eb1c',
+  'math':             'ed5e',
+  'pin':              'ea44',
+  'file-export':      'ede9',
+  'terminal':         'ebb2',
+  'align-center':     'ea07',
+  'message':          'ebb4',
 }
 
 export function getIconCode(iconName: string): string {
@@ -136,8 +146,22 @@ export const DEFAULT_CALLOUTS: Record<string, CalloutDef> = {
   tldr:      { icon: 'bolt',             label: 'TLDR',      colorGroup: 'teal' },
 
   important: { icon: 'urgent',           label: 'Important', colorGroup: 'red' },
+  danger:    { icon: 'alert-octagon',    label: 'Danger',    colorGroup: 'red' },
 
   tip:       { icon: 'bulb',             label: 'Tip',       colorGroup: 'orange' },
+
+  note:      { icon: 'pencil',           label: 'Note',      colorGroup: 'blue' },
+  example:   { icon: 'code',             label: 'Example',   colorGroup: 'purple' },
+
+  src:       { icon: 'code',             label: 'Src',       colorGroup: 'teal' },
+  query:     { icon: 'search',           label: 'Query',     colorGroup: 'blue' },
+  latex:     { icon: 'math',             label: 'LaTeX',     colorGroup: 'purple' },
+  pinned:    { icon: 'pin',              label: 'Pinned',    colorGroup: 'orange' },
+  export:    { icon: 'file-export',      label: 'Export',    colorGroup: 'teal' },
+  verse:     { icon: 'blockquote',       label: 'Verse',     colorGroup: 'purple' },
+  ascii:     { icon: 'terminal',         label: 'Ascii',     colorGroup: 'teal' },
+  center:    { icon: 'align-center',     label: 'Center',    colorGroup: 'blue' },
+  comment:   { icon: 'message',          label: 'Comment',   colorGroup: 'blue' },
 }
 
 export function getCallout(tagName: string): CalloutDef | undefined {

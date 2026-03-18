@@ -17,7 +17,7 @@
 | F-TD-1 | The plugin shall detect callout tags on blocks via three mechanisms, checked in order: (1) `block.tags` array (DB graph proper tags), (2) `block.refs` array (inline `#refs`), (3) content string scan for `#tagname` patterns. |
 | F-TD-2 | Tag matching shall be case-insensitive. |
 | F-TD-3 | Only the first matching callout tag on a block shall be used for styling. |
-| F-TD-4 | The plugin shall support 16 predefined callout tags across 7 color groups (see Section 4). |
+| F-TD-4 | The plugin shall support 28 predefined callout tags across 7 color groups (see Section 4). |
 
 ### 2.2 Page Scanning
 
@@ -136,7 +136,19 @@ The plugin supports three display modes, configurable via settings:
 | `summary` | Summary | list | teal |
 | `tldr` | TLDR | bolt | teal |
 | `important` | Important | urgent | red |
+| `danger` | Danger | alert-octagon | red |
 | `tip` | Tip | bulb | orange |
+| `note` | Note | pencil | blue |
+| `example` | Example | code | purple |
+| `src` | Src | code | teal |
+| `query` | Query | search | blue |
+| `latex` | LaTeX | math | purple |
+| `pinned` | Pinned | pin | orange |
+| `export` | Export | file-export | teal |
+| `verse` | Verse | blockquote | purple |
+| `ascii` | Ascii | terminal | teal |
+| `center` | Center | align-center | blue |
+| `comment` | Comment | message | blue |
 
 ### 4.1 Color Groups
 
