@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype 1: Callout / Admonition Tags</title>
+<style>
+  :root {
+    --bg: #1e1e2e;
+    --surface: #313244;
+    --text: #cdd6f4;
+    --subtext: #a6adc8;
+    --border: #45475a;
+    --bullet: #585b70;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 40px;
+    line-height: 1.6;
+  }
+
+  h1 { font-size: 18px; color: var(--subtext); margin-bottom: 8px; font-weight: 500; }
+  .subtitle { font-size: 13px; color: var(--subtext); margin-bottom: 32px; opacity: 0.7; }
+
+  /* Logseq-like block structure */
+  .block-container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .block {
+    position: relative;
+    padding: 4px 0 4px 28px;
+    margin: 2px 0;
+  }
+
+  .block::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 14px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--bullet);
+  }
+
+  .block-content {
+    font-size: 15px;
+  }
+
+  .block .block {
+    margin-left: 16px;
+  }
+
+  .tag {
+    color: #89b4fa;
+    font-size: 13px;
+  }
+
+  /* === Callout Styles === */
+  .callout {
+    position: relative;
+    border-radius: 8px;
+    padding: 12px 16px 12px 44px;
+    margin: 8px 0;
+  }
+
+  .callout::before {
+    /* bullet override — hide it */
+    display: none;
+  }
+
+  .callout .callout-icon {
+    position: absolute;
+    left: 14px;
+    top: 13px;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .callout .callout-label {
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1px 6px;
+    border-radius: 3px;
+    line-height: 1.4;
+  }
+
+  /* Info */
+  .callout-info {
+    background: rgba(137, 180, 250, 0.1);
+    border-left: 3px solid #89b4fa;
+  }
+  .callout-info .callout-label {
+    background: rgba(137, 180, 250, 0.2);
+    color: #89b4fa;
+  }
+
+  /* Warning */
+  .callout-warning {
+    background: rgba(249, 226, 175, 0.1);
+    border-left: 3px solid #f9e2af;
+  }
+  .callout-warning .callout-label {
+    background: rgba(249, 226, 175, 0.2);
+    color: #f9e2af;
+  }
+
+  /* Tip */
+  .callout-tip {
+    background: rgba(166, 227, 161, 0.1);
+    border-left: 3px solid #a6e3a1;
+  }
+  .callout-tip .callout-label {
+    background: rgba(166, 227, 161, 0.2);
+    color: #a6e3a1;
+  }
+
+  /* Danger */
+  .callout-danger {
+    background: rgba(243, 139, 168, 0.1);
+    border-left: 3px solid #f38ba8;
+  }
+  .callout-danger .callout-label {
+    background: rgba(243, 139, 168, 0.2);
+    color: #f38ba8;
+  }
+
+  /* Quote */
+  .callout-quote {
+    background: rgba(180, 190, 254, 0.08);
+    border-left: 3px solid #b4befe;
+  }
+  .callout-quote .callout-label {
+    background: rgba(180, 190, 254, 0.2);
+    color: #b4befe;
+  }
+
+  /* Child styling when cascade is on */
+  .callout-cascade .block {
+    padding-left: 28px;
+  }
+  .callout-cascade .block::before {
+    background: inherit;
+    opacity: 0.5;
+  }
+
+  /* Example sections */
+  .example-section {
+    margin-bottom: 48px;
+  }
+  .example-section h2 {
+    font-size: 14px;
+    color: var(--subtext);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--subtext);
+    cursor: pointer;
+  }
+  .controls input[type="checkbox"] {
+    accent-color: #89b4fa;
+  }
+</style>
+</head>
+<body>
+
+<h1>Prototype 1 — Callout / Admonition Tags</h1>
+<p class="subtitle">Tags like #info, #warning, #tip, #danger apply icon + label + colored background to blocks</p>
+
+<div class="controls">
+  <label><input type="checkbox" id="showLabels" checked onchange="toggleLabels()"> Show labels</label>
+  <label><input type="checkbox" id="showIcons" checked onchange="toggleIcons()"> Show icons</label>
+  <label><input type="checkbox" id="cascadeChildren" checked onchange="toggleCascade()"> Cascade to children</label>
+</div>
+
+<div class="block-container">
+
+  <!-- Section: Basic callouts -->
+  <div class="example-section">
+    <h2>Basic callout tags</h2>
+
+    <div class="block">
+      <div class="block-content">Some regular note without any callout tag</div>
+    </div>
+
+    <div class="callout callout-info callout-cascade" id="info-block">
+      <span class="callout-label label-el">INFO</span>
+      <span class="callout-icon icon-el">ℹ️</span>
+      <div class="block-content">
+        The database migration runs nightly at 2 AM UTC <span class="tag">#info</span>
+      </div>
+      <div class="block child-block">
+        <div class="block-content">Make sure the backup job completes before this runs</div>
+      </div>
+      <div class="block child-block">
+        <div class="block-content">See ops runbook for rollback procedures</div>
+      </div>
+    </div>
+
+    <div class="callout callout-warning callout-cascade" id="warning-block">
+      <span class="callout-label label-el">WARNING</span>
+      <span class="callout-icon icon-el">⚠️</span>
+      <div class="block-content">
+        Do not delete the legacy API routes until v3 clients migrate <span class="tag">#warning</span>
+      </div>
+      <div class="block child-block">
+        <div class="block-content">~15% of traffic still hits /api/v1/users</div>
+      </div>
+    </div>
+
+    <div class="callout callout-tip" id="tip-block">
+      <span class="callout-label label-el">TIP</span>
+      <span class="callout-icon icon-el">💡</span>
+      <div class="block-content">
+        Use <code style="background:rgba(166,227,161,0.15);padding:2px 5px;border-radius:3px;">cmd+shift+p</code> to quickly toggle the sidebar <span class="tag">#tip</span>
+      </div>
+    </div>
+
+    <div class="callout callout-danger callout-cascade" id="danger-block">
+      <span class="callout-label label-el">DANGER</span>
+      <span class="callout-icon icon-el">🔴</span>
+      <div class="block-content">
+        Production credentials must never be committed to the repo <span class="tag">#danger</span>
+      </div>
+      <div class="block child-block">
+        <div class="block-content">Use environment variables or the vault</div>
+      </div>
+      <div class="block child-block">
+        <div class="block-content">If leaked, rotate immediately via the security dashboard</div>
+        <div class="block child-block">
+          <div class="block-content">Contact security@company.com for audit trail</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-quote" id="quote-block">
+      <span class="callout-label label-el">QUOTE</span>
+      <span class="callout-icon icon-el">💬</span>
+      <div class="block-content">
+        "Simplicity is the ultimate sophistication." — Leonardo da Vinci <span class="tag">#quote</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Section: Mixed with regular blocks -->
+  <div class="example-section">
+    <h2>Mixed with regular blocks</h2>
+
+    <div class="block">
+      <div class="block-content">Meeting notes from standup 2026-03-17</div>
+      <div class="block">
+        <div class="block-content">Discussed the new auth flow</div>
+      </div>
+      <div class="callout callout-warning" style="margin-left: 16px;">
+        <span class="callout-label label-el">WARNING</span>
+        <span class="callout-icon icon-el">⚠️</span>
+        <div class="block-content">
+          OAuth token refresh is broken on mobile <span class="tag">#warning</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-content">Sprint velocity looks good for the milestone</div>
+      </div>
+      <div class="callout callout-tip" style="margin-left: 16px;">
+        <span class="callout-label label-el">TIP</span>
+        <span class="callout-icon icon-el">💡</span>
+        <div class="block-content">
+          Use the new batch endpoint for bulk updates <span class="tag">#tip</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleLabels() {
+  const show = document.getElementById('showLabels').checked;
+  document.querySelectorAll('.label-el').forEach(el => {
+    el.style.display = show ? '' : 'none';
+  });
+}
+
+function toggleIcons() {
+  const show = document.getElementById('showIcons').checked;
+  document.querySelectorAll('.icon-el').forEach(el => {
+    el.style.display = show ? '' : 'none';
+  });
+}
+
+function toggleCascade() {
+  const on = document.getElementById('cascadeChildren').checked;
+  document.querySelectorAll('.callout').forEach(el => {
+    el.classList.toggle('callout-cascade', on);
+  });
+}
+</script>
+</body>
+</html>
