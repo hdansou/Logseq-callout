@@ -113,15 +113,30 @@ ${sel} > .block-children-container {
 
     } else if (mode === 'container') {
       // === Container mode: bordered box with floating badge ===
+      const cascade = settings.cascadeToChildren
+      const r = 'var(--ls-border-radius-medium, 8px)'
+
+      // Base container — full rounded corners by default
       rules.push(`
 ${sel} > .block-main-container {
   background: ${t.bg};
   border: 1px solid ${t.border};
-  border-radius: var(--ls-border-radius-medium, 8px);
+  border-radius: ${r};
   padding: 16px 12px 8px 12px;
   margin: 8px 0;
   position: relative;
 }`)
+
+      // When cascade is on AND children exist, remove bottom corners + border
+      // to merge seamlessly with the children container
+      if (cascade) {
+        rules.push(`
+${sel}:has(> .block-children-container) > .block-main-container {
+  border-radius: ${r} ${r} 0 0;
+  border-bottom: none;
+  margin-bottom: 0;
+}`)
+      }
 
       // Floating badge with icon + label
       const badgeIcon = settings.showIcon ? `\\${getIconCode(callout.icon)}  ` : ''
@@ -152,16 +167,29 @@ html.dark ${sel} > .block-main-container::before {
 }`)
       }
 
-      // Cascade children with border
-      if (settings.cascadeToChildren) {
+      // Cascade children — extend background to align with parent's left edge
+      // using a ::before pseudo-element so content indentation is unchanged.
+      if (cascade) {
         rules.push(`
 ${sel} > .block-children-container {
+  position: relative;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+/* Paint background extending to parent's left edge without changing layout */
+${sel} > .block-children-container::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -24px;
+  right: -13px;
+  bottom: -1px;
   background: ${t.bg};
   border: 1px solid ${t.border};
   border-top: none;
-  border-radius: 0 0 var(--ls-border-radius-medium, 8px) var(--ls-border-radius-medium, 8px);
-  margin-top: -4px;
-  padding: 4px 8px 8px 8px;
+  border-radius: 0 0 ${r} ${r};
+  z-index: -1;
+  pointer-events: none;
 }`)
       }
     }
