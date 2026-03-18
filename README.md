@@ -10,15 +10,24 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 
 ### Supported Tags
 
-| Tag | Icon | Color |
-|-----|------|-------|
-| `#quote`, `#cite` | quote, blockquote | purple |
-| `#warning`, `#caution`, `#attention` | alert-triangle, bell-ringing | yellow |
-| `#question`, `#help`, `#faq` | help-circle, lifebuoy, message-question | blue |
-| `#success`, `#check`, `#done` | circle-check, check, checklist | green |
-| `#abstract`, `#summary`, `#tldr` | file-text, list, bolt | teal |
-| `#important` | urgent | red |
-| `#tip` | bulb | orange |
+| Tag          | Label    | Icon             | Color  |
+| ------------ | -------- | ---------------- | ------ |
+| `#quote`     | Quote    | quote            | purple |
+| `#cite`      | Cite     | blockquote       | purple |
+| `#warning`   | Warning  | alert-triangle   | yellow |
+| `#caution`   | Caution  | alert-triangle   | yellow |
+| `#attention` | Attention| bell-ringing     | yellow |
+| `#question`  | Question | help-circle      | blue   |
+| `#help`      | Help     | lifebuoy         | blue   |
+| `#faq`       | FAQ      | message-question | blue   |
+| `#success`   | Success  | circle-check     | green  |
+| `#check`     | Check    | check            | green  |
+| `#done`      | Done     | checklist        | green  |
+| `#abstract`  | Abstract | file-text        | teal   |
+| `#summary`   | Summary  | list             | teal   |
+| `#tldr`      | TLDR     | bolt             | teal   |
+| `#important` | Important| urgent           | red    |
+| `#tip`       | Tip      | bulb             | orange |
 
 ### Display Modes
 
@@ -28,12 +37,12 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 
 ### Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Display Mode | inline | How callout tags are displayed |
-| Cascade to Children | true | Apply styling to child blocks |
-| Show Label | true | Show callout type label (e.g. "Warning") |
-| Show Icon | true | Show tabler icon on the block |
+| Setting             | Default | Description                              |
+| ------------------- | ------- | ---------------------------------------- |
+| Display Mode        | inline  | How callout tags are displayed           |
+| Cascade to Children | true    | Apply styling to child blocks            |
+| Show Label          | true    | Show callout type label (e.g. "Warning") |
+| Show Icon           | true    | Show tabler icon on the block            |
 
 Slash commands are also registered for each callout type (e.g. `/Callout: Warning`).
 
