@@ -66,13 +66,24 @@ function generateDynamicCSS(): string {
 
     if (mode === 'inline') {
       // === Inline mode: colored band + icon in control area ===
+      const r = 'var(--ls-border-radius-low, 4px)'
+
       rules.push(`
 ${sel} > .block-main-container {
   background: ${t.bg};
-  border-radius: var(--ls-border-radius-low, 4px);
+  border-radius: ${r};
   padding: 4px 8px;
   margin: 2px 0;
 }`)
+
+      // When children exist, flatten bottom corners and remove bottom margin
+      if (settings.cascadeToChildren) {
+        rules.push(`
+${sel}:has(> .block-children-container) > .block-main-container {
+  border-radius: ${r} ${r} 0 0;
+  margin-bottom: 0;
+}`)
+      }
 
       // Icon + label badge in the block control area
       if (settings.showIcon || settings.showLabel) {
@@ -101,13 +112,14 @@ html.dark ${sel} > .block-main-container > .block-control-wrap::after {
 }`)
       }
 
-      // Cascade children
+      // Cascade children — pull left to align with parent, round bottom corners
       if (settings.cascadeToChildren) {
         rules.push(`
 ${sel} > .block-children-container {
   background: ${t.bg};
-  border-radius: 0 0 var(--ls-border-radius-low, 4px) var(--ls-border-radius-low, 4px);
-  padding: 2px 4px 4px 4px;
+  border-radius: 0 0 ${r} ${r};
+  margin-left: 0;
+  padding: 2px 8px 4px 29px;
 }`)
       }
 
@@ -167,29 +179,20 @@ html.dark ${sel} > .block-main-container::before {
 }`)
       }
 
-      // Cascade children — extend background to align with parent's left edge
-      // using a ::before pseudo-element so content indentation is unchanged.
+      // Cascade children — wrap in matching border that merges with parent.
+      // The parent's border-bottom is removed via :has(), so the children
+      // container draws left, right, and bottom borders to complete the box.
+      // Logseq's .block-children-container has margin-left: 29px by default.
+      // We pull it back to align with the parent's outer border edge.
       if (cascade) {
         rules.push(`
 ${sel} > .block-children-container {
-  position: relative;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-}
-/* Paint background extending to parent's left edge without changing layout */
-${sel} > .block-children-container::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: -24px;
-  right: -13px;
-  bottom: -1px;
   background: ${t.bg};
   border: 1px solid ${t.border};
   border-top: none;
   border-radius: 0 0 ${r} ${r};
-  z-index: -1;
-  pointer-events: none;
+  margin-left: 0;
+  padding: 4px 12px 8px 29px;
 }`)
       }
     }
