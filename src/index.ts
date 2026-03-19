@@ -72,7 +72,7 @@ function generateDynamicCSS(): string {
 ${sel} > .block-main-container {
   background: ${t.bg};
   border-radius: ${r};
-  padding: 4px 8px;
+  padding: 4px 4px 4px 0;
   margin: 2px 0;
 }`)
 
@@ -119,7 +119,7 @@ ${sel} > .block-children-container {
   background: ${t.bg};
   border-radius: 0 0 ${r} ${r};
   margin-left: 0;
-  padding: 2px 8px 4px 29px;
+  padding: 2px 4px 4px 29px;
 }`)
       }
 
