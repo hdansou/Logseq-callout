@@ -45,7 +45,7 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 
 - **Inline** (default) — colored background band with icon + label badge
 - **Container** — bordered box with floating badge, seamless child nesting
-- **Icon** — sets the node icon only
+- **Icon** — GitHub-style colored left border + sets the native node icon via `setBlockIcon`
 
 ### Settings
 
@@ -56,7 +56,7 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 | Show Label          | true    | Show callout type label (e.g. "Warning") |
 | Show Icon           | true    | Show tabler icon on the block            |
 
-Slash commands are also registered for each callout type (e.g. `/Callout: Warning`).
+Slash commands are registered for all 28 callout types (e.g. `/Callout: Warning`). Using a slash command also sets the node icon.
 
 ## Development
 

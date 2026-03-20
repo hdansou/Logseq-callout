@@ -41,7 +41,7 @@ The plugin supports three display modes, configurable via settings:
 | F-IN-1 | The tagged block's `.block-main-container` shall receive a colored background using the callout's color group. |
 | F-IN-2 | A badge containing the icon and/or label shall be rendered as a `::after` pseudo-element on `.block-control-wrap`. |
 | F-IN-3 | The badge shall use the tabler-icons webfont for the icon character, styled as uppercase with 11px font size. |
-| F-IN-4 | When "Cascade to Children" is enabled, child blocks shall receive the same background color with adjusted border-radius. |
+| F-IN-4 | When "Cascade to Children" is enabled, child blocks shall receive the same background color with `margin-left: 0` (flush with parent) and `border-radius: 0 0 r r` (bottom corners only). The parent's bottom corners shall be flattened via `:has()` selector. |
 
 #### 2.3.2 Container Mode
 
@@ -50,14 +50,16 @@ The plugin supports three display modes, configurable via settings:
 | F-CN-1 | The tagged block's `.block-main-container` shall be wrapped in a bordered box with rounded corners and background color. |
 | F-CN-2 | A floating badge shall be rendered as a `::before` pseudo-element, positioned absolutely at `top: -10px; left: 12px`, overlapping the top border. |
 | F-CN-3 | When "Cascade to Children" is enabled and children exist, the parent container's bottom border and bottom border-radius shall be removed (via `:has()` selector). |
-| F-CN-4 | Children shall be visually merged with the parent using a `::before` pseudo-element on `.block-children-container` that extends the background and border to align with the parent's edges. |
+| F-CN-4 | Children shall be visually merged with the parent by directly styling `.block-children-container` with `margin-left: 0` (overriding Logseq's default 29px indent), matching borders on left/right/bottom, and `padding-left: 29px` to preserve content indentation. |
 
 #### 2.3.3 Icon Mode
 
 | ID | Requirement |
 |----|-------------|
-| F-IC-1 | The tagged block's native node icon shall be set to the callout's tabler icon. |
-| F-IC-2 | No background, border, or badge styling shall be applied. |
+| F-IC-1 | The tagged block's native node icon shall be set via `logseq.Editor.setBlockIcon(uuid, 'tabler-icon', iconId)` using the callout's PascalCase icon ID. |
+| F-IC-2 | A 3px solid left border in the callout's color shall be applied to `.block-main-container` (GitHub-style callout). |
+| F-IC-3 | When "Cascade to Children" is enabled, the left border shall extend to `.block-children-container` with `margin-left: 0` to stay flush with the parent. |
+| F-IC-4 | Node icons set by this mode persist as block properties even after plugin unload (set-and-forget). |
 
 ### 2.4 Settings
 
@@ -72,8 +74,9 @@ The plugin supports three display modes, configurable via settings:
 
 | ID | Requirement |
 |----|-------------|
-| F-SC-1 | The plugin shall register a slash command for each of the 16 callout tags, named `Callout: {Label}` (e.g. `Callout: Warning`). |
+| F-SC-1 | The plugin shall register a slash command for each of the 28 callout tags, named `Callout: {Label}` (e.g. `Callout: Warning`). |
 | F-SC-2 | Invoking a slash command shall append `#{tagname}` to the current block's content if not already present. |
+| F-SC-3 | Invoking a slash command shall also set the block's node icon via `setBlockIcon()`, regardless of the active display mode. |
 
 ### 2.6 Cleanup
 
@@ -190,9 +193,10 @@ Supported color groups: **purple**, **yellow**, **blue**, **green**, **teal**, *
 │                                                 │
 │  ┌───────────┐  ┌────────────┐  ┌───────────┐  │
 │  │ index.ts  │  │ callouts.ts│  │ styles.ts  │  │
-│  │ scan loop │  │ 16 tag defs│  │ base CSS   │  │
+│  │ scan loop │  │ 28 tag defs│  │ base CSS   │  │
 │  │ CSS gen   │  │ color tokens│ │            │  │
-│  │ commands  │  │ icon codes │  │            │  │
+│  │ icon set  │  │ icon codes │  │            │  │
+│  │ commands  │  │ icon IDs   │  │            │  │
 │  └───────────┘  └────────────┘  └───────────┘  │
 │                                                 │
 │  SDK messaging ←→ logseq.Editor / App / DB APIs │
@@ -204,8 +208,8 @@ Supported color groups: **purple**, **yellow**, **blue**, **green**, **teal**, *
 1. **Trigger** — Page load, route change, DB change, or settings change fires a debounced scan.
 2. **Scan** — `scanAndDecorate()` resolves the current page, fetches the block tree, and recursively checks each block for callout tags via `findCalloutTag()`.
 3. **Map** — Matching blocks are stored in `decoratedBlocks` (Map of uuid → tag name).
-4. **Generate** — `generateDynamicCSS()` iterates the map, looks up each tag's callout definition and color tokens, and emits CSS rules based on the active display mode and settings.
-5. **Inject** — The generated CSS string is passed to `logseq.provideStyle()`, which creates a `<style>` element in the host document.
+4. **Generate** — `generateDynamicCSS()` iterates the map, looks up each tag's callout definition and color tokens, and emits CSS rules based on the active display mode and settings. In icon mode, `setBlockCalloutIcon()` also calls `setBlockIcon()` on each block.
+5. **Inject** — The generated CSS string is passed to `logseq.provideStyle()`, which creates a `<style>` element in the host document. All three modes inject CSS (icon mode for left borders, inline/container for full styling).
 
 ---
 
@@ -215,6 +219,6 @@ Supported color groups: **purple**, **yellow**, **blue**, **green**, **teal**, *
 |----|------------|
 | L-1 | `getCurrentPage()` returns null on journal pages; the workaround assumes the default Logseq date format (`MMM do, yyyy`). |
 | L-2 | Each `provideStyle()` call appends a new `<style>` element rather than replacing the previous one. Over many edit cycles this can accumulate stale style tags. |
-| L-3 | Container mode child cascade uses hardcoded pixel offsets (`left: -24px`, `right: -13px`) that may not align perfectly across all Logseq themes or zoom levels. |
-| L-4 | Icon mode is defined in the settings enum but not yet fully implemented in the CSS generation logic. |
-| L-5 | The `:has()` CSS selector (used in container mode cascade) is not supported in Firefox versions before 121. |
+| L-3 | The `:has()` CSS selector (used in inline/container mode cascade) is not supported in Firefox versions before 121. |
+| L-4 | Icon mode's `setBlockIcon()` persists the icon as a block property. Disabling the plugin does not remove previously set icons. |
+| L-5 | Cascade children alignment uses `margin-left: 0` to override Logseq's default 29px indent. If Logseq changes this value, the alignment may break. |
