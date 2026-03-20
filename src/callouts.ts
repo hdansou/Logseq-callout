@@ -9,6 +9,8 @@
 
 export interface CalloutDef {
   icon: string
+  /** PascalCase icon ID for logseq.Editor.setBlockIcon() */
+  iconId: string
   label: string
   colorGroup: ColorGroup
 }
@@ -126,42 +128,53 @@ export function getIconCode(iconName: string): string {
  * Default callout definitions — starter pack.
  */
 export const DEFAULT_CALLOUTS: Record<string, CalloutDef> = {
-  quote:     { icon: 'quote',            label: 'Quote',     colorGroup: 'purple' },
-  cite:      { icon: 'blockquote',       label: 'Cite',      colorGroup: 'purple' },
+  quote:     { icon: 'quote',            iconId: 'Blockquote',       label: 'Quote',     colorGroup: 'purple' },
+  cite:      { icon: 'blockquote',       iconId: 'Blockquote',       label: 'Cite',      colorGroup: 'purple' },
 
-  warning:   { icon: 'alert-triangle',   label: 'Warning',   colorGroup: 'yellow' },
-  caution:   { icon: 'alert-triangle',   label: 'Caution',   colorGroup: 'yellow' },
-  attention: { icon: 'bell-ringing',     label: 'Attention', colorGroup: 'yellow' },
+  warning:   { icon: 'alert-triangle',   iconId: 'AlertTriangle',    label: 'Warning',   colorGroup: 'yellow' },
+  caution:   { icon: 'alert-triangle',   iconId: 'AlertTriangle',    label: 'Caution',   colorGroup: 'yellow' },
+  attention: { icon: 'bell-ringing',     iconId: 'BellRinging',      label: 'Attention', colorGroup: 'yellow' },
 
-  question:  { icon: 'help-circle',      label: 'Question',  colorGroup: 'blue' },
-  help:      { icon: 'lifebuoy',         label: 'Help',      colorGroup: 'blue' },
-  faq:       { icon: 'message-question', label: 'FAQ',       colorGroup: 'blue' },
+  question:  { icon: 'help-circle',      iconId: 'HelpCircle',       label: 'Question',  colorGroup: 'blue' },
+  help:      { icon: 'lifebuoy',         iconId: 'Lifebuoy',         label: 'Help',      colorGroup: 'blue' },
+  faq:       { icon: 'message-question', iconId: 'MessageQuestion',  label: 'FAQ',       colorGroup: 'blue' },
 
-  success:   { icon: 'circle-check',     label: 'Success',   colorGroup: 'green' },
-  check:     { icon: 'check',            label: 'Check',     colorGroup: 'green' },
-  done:      { icon: 'checklist',        label: 'Done',      colorGroup: 'green' },
+  success:   { icon: 'circle-check',     iconId: 'CircleCheck',      label: 'Success',   colorGroup: 'green' },
+  check:     { icon: 'check',            iconId: 'Check',            label: 'Check',     colorGroup: 'green' },
+  done:      { icon: 'checklist',        iconId: 'Checklist',        label: 'Done',      colorGroup: 'green' },
 
-  abstract:  { icon: 'file-text',        label: 'Abstract',  colorGroup: 'teal' },
-  summary:   { icon: 'list',             label: 'Summary',   colorGroup: 'teal' },
-  tldr:      { icon: 'bolt',             label: 'TLDR',      colorGroup: 'teal' },
+  abstract:  { icon: 'file-text',        iconId: 'FileText',         label: 'Abstract',  colorGroup: 'teal' },
+  summary:   { icon: 'list',             iconId: 'List',             label: 'Summary',   colorGroup: 'teal' },
+  tldr:      { icon: 'bolt',             iconId: 'Bolt',             label: 'TLDR',      colorGroup: 'teal' },
 
-  important: { icon: 'urgent',           label: 'Important', colorGroup: 'red' },
-  danger:    { icon: 'alert-octagon',    label: 'Danger',    colorGroup: 'red' },
+  important: { icon: 'urgent',           iconId: 'Urgent',           label: 'Important', colorGroup: 'red' },
+  danger:    { icon: 'alert-octagon',    iconId: 'AlertOctagon',     label: 'Danger',    colorGroup: 'red' },
 
-  tip:       { icon: 'bulb',             label: 'Tip',       colorGroup: 'orange' },
+  tip:       { icon: 'bulb',             iconId: 'Bulb',             label: 'Tip',       colorGroup: 'orange' },
 
-  note:      { icon: 'pencil',           label: 'Note',      colorGroup: 'blue' },
-  example:   { icon: 'code',             label: 'Example',   colorGroup: 'purple' },
+  note:      { icon: 'pencil',           iconId: 'Pencil',           label: 'Note',      colorGroup: 'blue' },
+  example:   { icon: 'code',             iconId: 'Code',             label: 'Example',   colorGroup: 'purple' },
 
-  src:       { icon: 'code',             label: 'Src',       colorGroup: 'teal' },
-  query:     { icon: 'search',           label: 'Query',     colorGroup: 'blue' },
-  latex:     { icon: 'math',             label: 'LaTeX',     colorGroup: 'purple' },
-  pinned:    { icon: 'pin',              label: 'Pinned',    colorGroup: 'orange' },
-  export:    { icon: 'file-export',      label: 'Export',    colorGroup: 'teal' },
-  verse:     { icon: 'blockquote',       label: 'Verse',     colorGroup: 'purple' },
-  ascii:     { icon: 'terminal',         label: 'Ascii',     colorGroup: 'teal' },
-  center:    { icon: 'align-center',     label: 'Center',    colorGroup: 'blue' },
-  comment:   { icon: 'message',          label: 'Comment',   colorGroup: 'blue' },
+  src:       { icon: 'code',             iconId: 'Code',             label: 'Src',       colorGroup: 'teal' },
+  query:     { icon: 'search',           iconId: 'Search',           label: 'Query',     colorGroup: 'blue' },
+  latex:     { icon: 'math',             iconId: 'Math',             label: 'LaTeX',     colorGroup: 'purple' },
+  pinned:    { icon: 'pin',              iconId: 'Pin',              label: 'Pinned',    colorGroup: 'orange' },
+  export:    { icon: 'file-export',      iconId: 'FileExport',       label: 'Export',    colorGroup: 'teal' },
+  verse:     { icon: 'blockquote',       iconId: 'Blockquote',       label: 'Verse',     colorGroup: 'purple' },
+  ascii:     { icon: 'terminal',         iconId: 'Terminal',         label: 'Ascii',     colorGroup: 'teal' },
+  center:    { icon: 'align-center',     iconId: 'AlignCenter',      label: 'Center',    colorGroup: 'blue' },
+  comment:   { icon: 'message',          iconId: 'Message',          label: 'Comment',   colorGroup: 'blue' },
+}
+
+/** Hex colors for setBlockIcon, keyed by color group */
+export const ICON_COLORS: Record<ColorGroup, string> = {
+  purple: '#7c3aed',
+  yellow: '#ca8a04',
+  blue:   '#2563eb',
+  green:  '#16a34a',
+  teal:   '#0d9488',
+  red:    '#dc2626',
+  orange: '#ea580c',
 }
 
 export function getCallout(tagName: string): CalloutDef | undefined {

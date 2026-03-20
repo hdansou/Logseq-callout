@@ -1,6 +1,6 @@
 import '@logseq/libs'
 import type { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin'
-import { DEFAULT_CALLOUTS, getCallout, COLOR_GROUPS, getIconCode } from './callouts'
+import { DEFAULT_CALLOUTS, getCallout, COLOR_GROUPS, ICON_COLORS, getIconCode } from './callouts'
 
 type DisplayMode = 'icon' | 'inline' | 'container'
 
@@ -64,7 +64,25 @@ function generateDynamicCSS(): string {
     const sel = `.ls-block[blockid="${uuid}"]`
     const iconContent = `"\\${getIconCode(callout.icon)}"`
 
-    if (mode === 'inline') {
+    if (mode === 'icon') {
+      // === Icon mode: colored left border (GitHub-style) + node icon ===
+      rules.push(`
+${sel} > .block-main-container {
+  border-left: 3px solid ${t.border};
+  padding-left: 8px;
+}`)
+
+      // Cascade left border to children
+      if (settings.cascadeToChildren) {
+        rules.push(`
+${sel} > .block-children-container {
+  border-left: 3px solid ${t.border};
+  margin-left: 0;
+  padding-left: 29px;
+}`)
+      }
+
+    } else if (mode === 'inline') {
       // === Inline mode: colored band + icon in control area ===
       const r = 'var(--ls-border-radius-low, 4px)'
 
@@ -202,6 +220,25 @@ ${sel} > .block-children-container {
 }
 
 /**
+ * Set a block's node icon to the callout's tabler icon.
+ */
+async function setBlockCalloutIcon(uuid: string, tagName: string): Promise<void> {
+  const callout = getCallout(tagName)
+  if (!callout) return
+  try {
+    const editor = logseq.Editor as Record<string, unknown>
+    const setIcon = editor.setBlockIcon as (
+      uuid: string, type: string, id: string
+    ) => Promise<void> | undefined
+    if (typeof setIcon === 'function') {
+      await setIcon.call(editor, uuid, 'tabler-icon', callout.iconId)
+    }
+  } catch (err) {
+    console.warn('[callout] setBlockIcon error:', err)
+  }
+}
+
+/**
  * Scan the current page for blocks with callout tags.
  */
 async function scanAndDecorate(): Promise<void> {
@@ -230,6 +267,20 @@ async function scanAndDecorate(): Promise<void> {
     console.warn('[callout] scan error:', err)
   }
 
+  const settings = logseq.settings as unknown as PluginSettings
+  const mode = settings.displayMode
+
+  // In icon mode, set node icons on all callout blocks
+  if (mode === 'icon') {
+    for (const [uuid, tagName] of decoratedBlocks) {
+      await setBlockCalloutIcon(uuid, tagName)
+    }
+    if (decoratedBlocks.size > 0) {
+      console.log(`[callout] Set icons on ${decoratedBlocks.size} blocks`)
+    }
+  }
+
+  // Inject CSS for all modes (icon mode has left border, inline/container have full styling)
   if (decoratedBlocks.size > 0 || oldSize > 0) {
     logseq.provideStyle(`/* callout-dynamic */ ${generateDynamicCSS()}`)
     if (decoratedBlocks.size > 0) {
@@ -333,6 +384,8 @@ async function main(): Promise<void> {
       if (!content.includes(tagStr)) {
         await logseq.Editor.updateBlock(block.uuid, `${content} ${tagStr}`)
       }
+      // Always set the node icon when using slash command
+      await setBlockCalloutIcon(block.uuid, tag)
     })
   }
 
