@@ -4,3 +4,4 @@ dist/
 .playwright-cli/
 slash-menu.yaml
 .DS_Store
+.claude/settings.local.json
