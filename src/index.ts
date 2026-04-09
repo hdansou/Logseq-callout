@@ -1,6 +1,7 @@
 import '@logseq/libs'
 import type { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin'
 import { DEFAULT_CALLOUTS, getCallout, COLOR_GROUPS, ICON_COLORS, getIconCode } from './callouts'
+import { generateAllStyles } from './styles'
 
 type DisplayMode = 'icon' | 'inline' | 'container'
 
@@ -282,7 +283,7 @@ async function scanAndDecorate(): Promise<void> {
 
   // Inject CSS for all modes (icon mode has left border, inline/container have full styling)
   if (decoratedBlocks.size > 0 || oldSize > 0) {
-    logseq.provideStyle(`/* callout-dynamic */ ${generateDynamicCSS()}`)
+    logseq.provideStyle({ key: 'callout-dynamic', style: generateDynamicCSS() })
     if (decoratedBlocks.size > 0) {
       console.log(`[callout] Styled ${decoratedBlocks.size} blocks`)
     }
@@ -364,6 +365,9 @@ async function main(): Promise<void> {
   console.log('[callout] Plugin loaded')
 
   logseq.useSettingsSchema(SETTINGS_SCHEMA)
+
+  // Inject static base styles (position: relative for container mode badges)
+  logseq.provideStyle({ key: 'callout-base', style: generateAllStyles() })
 
   // Initial scan after page settles
   setTimeout(scanAndDecorate, 800)

@@ -94,7 +94,7 @@ The plugin supports three display modes, configurable via settings:
 |----|-------------|
 | N-CSS-1 | All visual styling shall be applied via CSS injection using `logseq.provideStyle()`, not direct DOM manipulation. This is required because the plugin runs in a sandboxed iframe that cannot access `parent.document`. |
 | N-CSS-2 | Block targeting shall use `[blockid="uuid"]` attribute selectors to scope styles to specific blocks. |
-| N-CSS-3 | Dynamic CSS shall be regenerated on every scan cycle, replacing the full style block. |
+| N-CSS-3 | Dynamic CSS shall be regenerated on every scan cycle, replacing the full style block via keyed `provideStyle({ key })`. |
 
 ### 3.2 Theme Support
 
@@ -218,7 +218,7 @@ Supported color groups: **purple**, **yellow**, **blue**, **green**, **teal**, *
 | ID | Limitation |
 |----|------------|
 | L-1 | `getCurrentPage()` returns null on journal pages; the workaround assumes the default Logseq date format (`MMM do, yyyy`). |
-| L-2 | Each `provideStyle()` call appends a new `<style>` element rather than replacing the previous one. Over many edit cycles this can accumulate stale style tags. |
+| L-2 | ~~Resolved~~ — `provideStyle()` now uses keyed replacement (`callout-base`, `callout-dynamic`) to avoid accumulating stale style tags. |
 | L-3 | The `:has()` CSS selector (used in inline/container mode cascade) is not supported in Firefox versions before 121. |
 | L-4 | Icon mode's `setBlockIcon()` persists the icon as a block property. Disabling the plugin does not remove previously set icons. |
 | L-5 | Cascade children alignment uses `margin-left: 0` to override Logseq's default 29px indent. If Logseq changes this value, the alignment may break. |

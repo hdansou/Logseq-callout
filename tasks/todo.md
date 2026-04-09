@@ -2,7 +2,7 @@
 
 ## Current: Audit Findings
 
-Status: planning
+Status: in-progress
 Started: 2026-04-07
 
 ### Tasks
@@ -13,16 +13,19 @@ Started: 2026-04-07
       Either parse the format string or document this as intentional.
       Test: Journal pages resolve correctly with non-default date formats
 
-- [ ] **2. Remove or wire up dead `styles.ts`** — `src/styles.ts`
-      `generateAllStyles()` is defined but never called. The base static style
-      (`position: relative` on `.block-main-container`) is never injected.
-      Either import and use it in `main()` via `logseq.provideStyle()`, or
-      delete the file if it's unnecessary.
-      Test: No dead code; `npm run typecheck` passes
+- [x] **2. Remove or wire up dead `styles.ts`** — `src/styles.ts`
+      Wired up: imported `generateAllStyles()` in `main()`, injected via
+      `logseq.provideStyle({ key: 'callout-base', style: generateAllStyles() })`.
+
+- [x] **3. Fix `provideStyle()` accumulation** — `src/index.ts:285`
+      Replaced bare `provideStyle(css)` with keyed
+      `provideStyle({ key: 'callout-dynamic', style: css })` so each scan
+      replaces the previous style tag instead of appending a new one.
+      Root cause of inline/container modes not working.
 
 ### Progress Log
 
-<!-- Append entries as tasks complete -->
+- 2026-04-08: Fixed style accumulation and wired up base styles (tasks 2 & 3)
 
 ### Review
 

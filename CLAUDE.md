@@ -110,7 +110,7 @@ Then in Logseq: Settings → Advanced → Enable Developer mode → Plugins → 
 |------|---------|
 | `src/index.ts` | Plugin entry: settings, scan logic, dynamic CSS generation, icon setting, slash commands |
 | `src/callouts.ts` | 28 callout definitions (tag → icon + iconId + label + color), Radix color tokens, tabler icon codes, icon colors |
-| `src/styles.ts` | Static base styles — **currently dead code** (`generateAllStyles()` is never called) |
+| `src/styles.ts` | Static base styles injected once on plugin load (e.g. `position: relative` for container badges) |
 | `vite.config.ts` | Vite build config: ES2020 target, terser minification, dev server on port 8080 |
 | `vite-logseq-safe-plugin.ts` | Custom Vite plugin: HMR integration, auto-reload via `LSPluginCore`, writes dev `index.html` to dist/ |
 | `prototypes/` | HTML mockups showing all three display modes |
@@ -140,7 +140,7 @@ Cascade to children uses `margin-left: 0` to override Logseq's default `.block-c
 
 - `getCurrentPage()` returns null on journal pages — worked around via `formatJournalDate()` fallback using `getUserConfigs().preferredDateFormat`
 - Cross-origin: plugin iframe at `:8080` cannot access `parent.document` directly — all DOM targeting uses `provideStyle()` CSS injection instead
-- Each `provideStyle()` call adds a new `<style>` element (no key-based replacement) — acceptable for now but could accumulate
+- `provideStyle()` uses keyed replacement (`callout-base` and `callout-dynamic`) to avoid accumulating stale `<style>` elements
 - Icon mode's `setBlockIcon()` persists icons as block properties — they remain after plugin unload (by design)
 - `formatJournalDate()` ignores the `_format` parameter and hardcodes `MMM do, yyyy` — will fail for users with non-default date formats
 
