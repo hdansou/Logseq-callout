@@ -227,13 +227,7 @@ async function setBlockCalloutIcon(uuid: string, tagName: string): Promise<void>
   const callout = getCallout(tagName)
   if (!callout) return
   try {
-    const editor = logseq.Editor as Record<string, unknown>
-    const setIcon = editor.setBlockIcon as (
-      uuid: string, type: string, id: string
-    ) => Promise<void> | undefined
-    if (typeof setIcon === 'function') {
-      await setIcon.call(editor, uuid, 'tabler-icon', callout.iconId)
-    }
+    await logseq.Editor.setBlockIcon(uuid, 'tabler-icon', callout.iconId)
   } catch (err) {
     console.warn('[callout] setBlockIcon error:', err)
   }
@@ -291,7 +285,7 @@ async function scanAndDecorate(): Promise<void> {
 }
 
 async function scanBlockTree(
-  blocks: Array<{ uuid: string; children?: unknown[]; content?: string }>,
+  blocks: Array<{ uuid: string; children?: unknown[]; title?: string; content?: string }>,
 ): Promise<void> {
   for (const block of blocks) {
     const tagName = await findCalloutTag(block.uuid)
@@ -300,7 +294,7 @@ async function scanBlockTree(
     }
     if (block.children && Array.isArray(block.children) && block.children.length > 0) {
       await scanBlockTree(
-        block.children as Array<{ uuid: string; children?: unknown[]; content?: string }>,
+        block.children as Array<{ uuid: string; children?: unknown[]; title?: string; content?: string }>,
       )
     }
   }
@@ -331,10 +325,11 @@ async function findCalloutTag(uuid: string): Promise<string | null> {
       }
     }
 
-    // Fallback: scan content for #tag patterns
-    const content = (block.content ?? '').toLowerCase()
+    // Fallback: scan block text for #tag patterns.
+    // BlockEntity.content is deprecated in @logseq/libs 0.3.x — prefer title.
+    const text = ((block.title as string | undefined) ?? block.content ?? '').toLowerCase()
     for (const tagName of Object.keys(DEFAULT_CALLOUTS)) {
-      if (content.includes(`#${tagName}`)) return tagName
+      if (text.includes(`#${tagName}`)) return tagName
     }
 
     return null
@@ -383,10 +378,10 @@ async function main(): Promise<void> {
     logseq.Editor.registerSlashCommand(`Callout: ${def.label}`, async () => {
       const block = await logseq.Editor.getCurrentBlock()
       if (!block) return
-      const content = block.content ?? ''
+      const text = (block.title as string | undefined) ?? block.content ?? ''
       const tagStr = `#${tag}`
-      if (!content.includes(tagStr)) {
-        await logseq.Editor.updateBlock(block.uuid, `${content} ${tagStr}`)
+      if (!text.includes(tagStr)) {
+        await logseq.Editor.updateBlock(block.uuid, `${text} ${tagStr}`)
       }
       // Always set the node icon when using slash command
       await setBlockCalloutIcon(block.uuid, tag)

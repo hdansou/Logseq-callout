@@ -9,15 +9,14 @@
   "supportsDB": true,
   "supportsDBOnly": true,
   "effect": true,
-  "main": "dist/index.js",
   "scripts": {
+    "dev": "vite",
     "build": "vite build",
     "watch": "vite build --watch",
-    "serve": "vite serve",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@logseq/libs": "^0.2.12"
+    "@logseq/libs": "^0.3.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

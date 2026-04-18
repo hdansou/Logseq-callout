@@ -6,6 +6,10 @@
 
 **Target environment:** Logseq DB graphs only (`supportsDBOnly: true`).
 
+**SDK:** `@logseq/libs ^0.3.2`. `BlockEntity.content` is deprecated upstream
+in favor of `BlockEntity.title`; the plugin reads `block.title` with
+`block.content` as a compatibility fallback.
+
 ---
 
 ## 2. Functional Requirements
@@ -14,7 +18,7 @@
 
 | ID | Requirement |
 |----|-------------|
-| F-TD-1 | The plugin shall detect callout tags on blocks via three mechanisms, checked in order: (1) `block.tags` array (DB graph proper tags), (2) `block.refs` array (inline `#refs`), (3) content string scan for `#tagname` patterns. |
+| F-TD-1 | The plugin shall detect callout tags on blocks via three mechanisms, checked in order: (1) `block.tags` array (DB graph proper tags), (2) `block.refs` array (inline `#refs`), (3) text scan of `block.title` (falling back to the deprecated `block.content`) for `#tagname` patterns. |
 | F-TD-2 | Tag matching shall be case-insensitive. |
 | F-TD-3 | Only the first matching callout tag on a block shall be used for styling. |
 | F-TD-4 | The plugin shall support 28 predefined callout tags across 7 color groups (see Section 4). |
