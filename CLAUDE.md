@@ -72,7 +72,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 npm install       # Install dependencies
 npm run build     # Production build → dist/ (terser minification, no sourcemaps)
 npm run watch     # Rebuild dist/ on file changes (no HTTP server)
-npm run serve     # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
+npm run dev       # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
 npm run typecheck # TypeScript type check only
 ```
 
@@ -87,7 +87,7 @@ cd /Users/dzu/Projects/src/github.com/logseq && yarn watch
 Loading the plugin requires two processes:
 
 1. **Build watcher** — `npm run watch`
-2. **Dev HTTP server** — `npm run serve`
+2. **Dev server** — `npm run dev`
 
 Then in Logseq: Settings → Advanced → Enable Developer mode → Plugins → ⋮ → "Load plugin from web url" → `http://localhost:8080`
 

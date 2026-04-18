@@ -10,36 +10,36 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 
 ### Supported Tags
 
-| Tag          | Label    | Icon             | Color  |
-| ------------ | -------- | ---------------- | ------ |
-| `#quote`     | Quote    | quote            | purple |
-| `#cite`      | Cite     | blockquote       | purple |
-| `#warning`   | Warning  | alert-triangle   | yellow |
-| `#caution`   | Caution  | alert-triangle   | yellow |
-| `#attention` | Attention| bell-ringing     | yellow |
-| `#question`  | Question | help-circle      | blue   |
-| `#help`      | Help     | lifebuoy         | blue   |
-| `#faq`       | FAQ      | message-question | blue   |
-| `#success`   | Success  | circle-check     | green  |
-| `#check`     | Check    | check            | green  |
-| `#done`      | Done     | checklist        | green  |
-| `#abstract`  | Abstract | file-text        | teal   |
-| `#summary`   | Summary  | list             | teal   |
-| `#tldr`      | TLDR     | bolt             | teal   |
-| `#important` | Important| urgent           | red    |
-| `#danger`    | Danger   | alert-octagon    | red    |
-| `#tip`       | Tip      | bulb             | orange |
-| `#note`      | Note     | pencil           | blue   |
-| `#example`   | Example  | code             | purple |
-| `#src`       | Src      | code             | teal   |
-| `#query`     | Query    | search           | blue   |
-| `#latex`     | LaTeX    | math             | purple |
-| `#pinned`    | Pinned   | pin              | orange |
-| `#export`    | Export   | file-export      | teal   |
-| `#verse`     | Verse    | blockquote       | purple |
-| `#ascii`     | Ascii    | terminal         | teal   |
-| `#center`    | Center   | align-center     | blue   |
-| `#comment`   | Comment  | message          | blue   |
+| Tag          | Label     | Icon             | Color  |
+| ------------ | --------- | ---------------- | ------ |
+| `#quote`     | Quote     | quote            | purple |
+| `#cite`      | Cite      | blockquote       | purple |
+| `#warning`   | Warning   | alert-triangle   | yellow |
+| `#caution`   | Caution   | alert-triangle   | yellow |
+| `#attention` | Attention | bell-ringing     | yellow |
+| `#question`  | Question  | help-circle      | blue   |
+| `#help`      | Help      | lifebuoy         | blue   |
+| `#faq`       | FAQ       | message-question | blue   |
+| `#success`   | Success   | circle-check     | green  |
+| `#check`     | Check     | check            | green  |
+| `#done`      | Done      | checklist        | green  |
+| `#abstract`  | Abstract  | file-text        | teal   |
+| `#summary`   | Summary   | list             | teal   |
+| `#tldr`      | TLDR      | bolt             | teal   |
+| `#important` | Important | urgent           | red    |
+| `#danger`    | Danger    | alert-octagon    | red    |
+| `#tip`       | Tip       | bulb             | orange |
+| `#note`      | Note      | pencil           | blue   |
+| `#example`   | Example   | code             | purple |
+| `#src`       | Src       | code             | teal   |
+| `#query`     | Query     | search           | blue   |
+| `#latex`     | LaTeX     | math             | purple |
+| `#pinned`    | Pinned    | pin              | orange |
+| `#export`    | Export    | file-export      | teal   |
+| `#verse`     | Verse     | blockquote       | purple |
+| `#ascii`     | Ascii     | terminal         | teal   |
+| `#center`    | Center    | align-center     | blue   |
+| `#comment`   | Comment   | message          | blue   |
 
 ### Display Modes
 
@@ -64,7 +64,7 @@ Slash commands are registered for all 28 callout types (e.g. `/Callout: Warning`
 npm install       # Install dependencies
 npm run build     # Production build → dist/
 npm run watch     # Rebuild on file changes
-npm run serve     # Dev server at http://localhost:8080
+npm run dev       # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
 npm run typecheck # TypeScript type check
 ```
 
