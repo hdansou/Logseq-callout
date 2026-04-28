@@ -66,10 +66,10 @@ re-run and compare.
       Replaced the date-format workaround with `logseq.Editor.getTodayPage()`.
       `formatJournalDate` deleted entirely.
 
-- [ ] **Replace slash-command text mutation with `Editor.addBlockTag()`** —
-      DB graphs have proper tag APIs (`addBlockTag`, `getTagsByName`,
-      `createTag`). Cleaner than appending `#tag` to block title text.
-      Design pass first.
+- [x] **Replace slash-command text mutation with `Editor.addBlockTag()`** —
+      Slash command now resolves the tag page via `getTagsByName` (or
+      creates it via `createTag`) and attaches it through `addBlockTag`.
+      Block content is no longer mutated. CHANGELOG updated.
 
 ### Completed (previous audit)
 

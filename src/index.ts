@@ -247,6 +247,19 @@ async function setBlockCalloutIcon(uuid: string, tagName: string): Promise<void>
 }
 
 /**
+ * Attach a callout tag to a block, creating the tag page if needed.
+ */
+async function attachCalloutTag(blockUuid: string, tagName: string): Promise<void> {
+  try {
+    const existing = await logseq.Editor.getTagsByName(tagName)
+    const tagPage = existing?.[0] ?? (await logseq.Editor.createTag(tagName))
+    if (tagPage) await logseq.Editor.addBlockTag(blockUuid, tagPage.uuid)
+  } catch (err) {
+    console.warn('[callout] attachCalloutTag error:', err)
+  }
+}
+
+/**
  * Scan the current page for blocks with callout tags.
  */
 async function scanAndDecorate(): Promise<void> {
@@ -365,17 +378,12 @@ async function main(): Promise<void> {
   })
   logseq.onSettingsChanged(() => debouncedScan(100))
 
-  // Slash commands
+  // Slash commands — attach a proper DB tag rather than appending #tag text.
   for (const [tag, def] of Object.entries(DEFAULT_CALLOUTS)) {
     logseq.Editor.registerSlashCommand(`Callout: ${def.label}`, async () => {
       const block = await logseq.Editor.getCurrentBlock()
       if (!block) return
-      const text = (block.title as string | undefined) ?? block.content ?? ''
-      const tagStr = `#${tag}`
-      if (!text.includes(tagStr)) {
-        await logseq.Editor.updateBlock(block.uuid, `${text} ${tagStr}`)
-      }
-      // Always set the node icon when using slash command
+      await attachCalloutTag(block.uuid, tag)
       await setBlockCalloutIcon(block.uuid, tag)
     })
   }

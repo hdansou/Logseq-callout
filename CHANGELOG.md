@@ -11,11 +11,18 @@ All notable changes to **logseq-callout** are documented here. Format follows
 - Tag detection now reads `block.title` (with `block.content` fallback) —
   `BlockEntity.content` is deprecated in the 0.3.x SDK.
 - Slash-command handler reads `block.title` instead of `block.content`.
+- **Slash commands now attach a proper DB tag** via `Editor.addBlockTag`
+  (creating the tag page through `createTag` when needed) instead of
+  appending `#tag` to the block's text. The block's content is no longer
+  mutated; the tag binding is what drives styling.
+- Journal-page fallback uses `Editor.getTodayPage()` instead of a hand-rolled
+  date-format workaround. Past-journal pages remain unsupported.
 
 ### Removed
 - Defensive `Record<string, unknown>` cast around
   `logseq.Editor.setBlockIcon` — the 0.3.x SDK exposes a typed signature,
   so the workaround is obsolete.
+- `formatJournalDate` helper (obsoleted by `Editor.getTodayPage`).
 
 ## [0.1.0] — 2026-04-08
 
