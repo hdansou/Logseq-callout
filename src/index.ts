@@ -1,5 +1,6 @@
 import '@logseq/libs'
 import type { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin'
+import type { CalloutDef, ColorTokens } from './callouts'
 import { DEFAULT_CALLOUTS, getCallout, COLOR_GROUPS, getIconCode } from './callouts'
 import { generateAllStyles } from './styles'
 
@@ -11,6 +12,15 @@ interface PluginSettings {
   showLabel: boolean
   showIcon: boolean
 }
+
+interface RenderCtx {
+  sel: string
+  t: ColorTokens
+  callout: CalloutDef
+  settings: PluginSettings
+}
+
+type Renderer = (ctx: RenderCtx) => string[]
 
 const SETTINGS_SCHEMA: SettingSchemaDesc[] = [
   {
@@ -49,69 +59,54 @@ const SETTINGS_SCHEMA: SettingSchemaDesc[] = [
 /** Track decorated block UUIDs and their callout tag */
 const decoratedBlocks = new Map<string, string>()
 
-/**
- * Generate per-block dynamic CSS for the active display mode.
- * Targets blocks by [blockid="uuid"] attribute selector.
- */
-function generateDynamicCSS(): string {
-  const settings = logseq.settings as unknown as PluginSettings
-  const mode = settings.displayMode
-  const rules: string[] = []
+// === Per-mode CSS renderers ===
 
-  for (const [uuid, tagName] of decoratedBlocks) {
-    const callout = getCallout(tagName)
-    if (!callout) continue
-    const t = COLOR_GROUPS[callout.colorGroup]
-    const sel = `.ls-block[blockid="${uuid}"]`
-
-    if (mode === 'icon') {
-      // === Icon mode: colored left border (GitHub-style) + node icon ===
-      rules.push(`
+function renderIconMode({ sel, t, settings }: RenderCtx): string[] {
+  // GitHub-style colored left border. Cascade extends the same border to
+  // children; the node icon itself is set imperatively via setBlockIcon.
+  const rules: string[] = [`
 ${sel} > .block-main-container {
   border-left: 3px solid ${t.border};
   padding-left: 8px;
-}`)
+}`]
 
-      // Cascade left border to children
-      if (settings.cascadeToChildren) {
-        rules.push(`
+  if (settings.cascadeToChildren) {
+    rules.push(`
 ${sel} > .block-children-container {
   border-left: 3px solid ${t.border};
   margin-left: 0;
   padding-left: 29px;
 }`)
-      }
+  }
+  return rules
+}
 
-    } else if (mode === 'inline') {
-      // === Inline mode: colored band + icon in control area ===
-      const r = 'var(--ls-border-radius-low, 4px)'
-
-      rules.push(`
+function renderInlineMode({ sel, t, callout, settings }: RenderCtx): string[] {
+  const r = 'var(--ls-border-radius-low, 4px)'
+  const rules: string[] = [`
 ${sel} > .block-main-container {
   background: ${t.bg};
   border-radius: ${r};
   padding: 4px 4px 4px 0;
   margin: 2px 0;
-}`)
+}`]
 
-      // When children exist, flatten bottom corners and remove bottom margin
-      if (settings.cascadeToChildren) {
-        rules.push(`
+  // When children exist, flatten bottom corners and remove bottom margin.
+  if (settings.cascadeToChildren) {
+    rules.push(`
 ${sel}:has(> .block-children-container) > .block-main-container {
   border-radius: ${r} ${r} 0 0;
   margin-bottom: 0;
 }`)
-      }
+  }
 
-      // Icon + label badge in the block control area
-      if (settings.showIcon || settings.showLabel) {
-        const iconPart = settings.showIcon ? `\\${getIconCode(callout.icon)}` : ''
-        const labelPart = settings.showLabel ? ` ${callout.label}` : ''
-        const afterContent = `"${iconPart}${labelPart}"`
-
-        rules.push(`
+  // Badge in the block control area.
+  if (settings.showIcon || settings.showLabel) {
+    const iconPart = settings.showIcon ? `\\${getIconCode(callout.icon)}` : ''
+    const labelPart = settings.showLabel ? ` ${callout.label}` : ''
+    rules.push(`
 ${sel} > .block-main-container > .block-control-wrap::after {
-  content: ${afterContent};
+  content: "${iconPart}${labelPart}";
   font-family: "tabler-icons", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 11px;
   font-weight: 600;
@@ -128,26 +123,25 @@ ${sel} > .block-main-container > .block-control-wrap::after {
 html.dark ${sel} > .block-main-container > .block-control-wrap::after {
   color: ${t.textDark};
 }`)
-      }
+  }
 
-      // Cascade children — pull left to align with parent, round bottom corners
-      if (settings.cascadeToChildren) {
-        rules.push(`
+  // Cascade children — pull left to align with parent, round bottom corners.
+  if (settings.cascadeToChildren) {
+    rules.push(`
 ${sel} > .block-children-container {
   background: ${t.bg};
   border-radius: 0 0 ${r} ${r};
   margin-left: 0;
   padding: 2px 4px 4px 29px;
 }`)
-      }
+  }
+  return rules
+}
 
-    } else if (mode === 'container') {
-      // === Container mode: bordered box with floating badge ===
-      const cascade = settings.cascadeToChildren
-      const r = 'var(--ls-border-radius-medium, 8px)'
-
-      // Base container — full rounded corners by default
-      rules.push(`
+function renderContainerMode({ sel, t, callout, settings }: RenderCtx): string[] {
+  const cascade = settings.cascadeToChildren
+  const r = 'var(--ls-border-radius-medium, 8px)'
+  const rules: string[] = [`
 ${sel} > .block-main-container {
   background: ${t.bg};
   border: 1px solid ${t.border};
@@ -155,26 +149,25 @@ ${sel} > .block-main-container {
   padding: 16px 12px 8px 12px;
   margin: 8px 0;
   position: relative;
-}`)
+}`]
 
-      // When cascade is on AND children exist, remove bottom corners + border
-      // to merge seamlessly with the children container
-      if (cascade) {
-        rules.push(`
+  // When cascade is on AND children exist, remove bottom corners + border so
+  // the children container can complete the box seamlessly.
+  if (cascade) {
+    rules.push(`
 ${sel}:has(> .block-children-container) > .block-main-container {
   border-radius: ${r} ${r} 0 0;
   border-bottom: none;
   margin-bottom: 0;
 }`)
-      }
+  }
 
-      // Floating badge with icon + label
-      const badgeIcon = settings.showIcon ? `\\${getIconCode(callout.icon)}  ` : ''
-      const badgeLabel = settings.showLabel ? callout.label : ''
-      const badgeContent = badgeIcon + badgeLabel
-
-      if (badgeContent) {
-        rules.push(`
+  // Floating badge with icon + label.
+  const badgeIcon = settings.showIcon ? `\\${getIconCode(callout.icon)}  ` : ''
+  const badgeLabel = settings.showLabel ? callout.label : ''
+  const badgeContent = badgeIcon + badgeLabel
+  if (badgeContent) {
+    rules.push(`
 ${sel} > .block-main-container::before {
   content: "${badgeContent}";
   font-family: "tabler-icons", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -195,15 +188,11 @@ ${sel} > .block-main-container::before {
 html.dark ${sel} > .block-main-container::before {
   color: ${t.textDark};
 }`)
-      }
+  }
 
-      // Cascade children — wrap in matching border that merges with parent.
-      // The parent's border-bottom is removed via :has(), so the children
-      // container draws left, right, and bottom borders to complete the box.
-      // Logseq's .block-children-container has margin-left: 29px by default.
-      // We pull it back to align with the parent's outer border edge.
-      if (cascade) {
-        rules.push(`
+  // Cascade children — wrap in matching border that merges with parent.
+  if (cascade) {
+    rules.push(`
 ${sel} > .block-children-container {
   background: ${t.bg};
   border: 1px solid ${t.border};
@@ -212,10 +201,35 @@ ${sel} > .block-children-container {
   margin-left: 0;
   padding: 4px 12px 8px 29px;
 }`)
-      }
-    }
   }
+  return rules
+}
 
+const RENDERERS: Record<DisplayMode, Renderer> = {
+  icon: renderIconMode,
+  inline: renderInlineMode,
+  container: renderContainerMode,
+}
+
+/**
+ * Generate per-block dynamic CSS for the active display mode.
+ * Targets blocks by [blockid="uuid"] attribute selector.
+ */
+function generateDynamicCSS(): string {
+  const settings = logseq.settings as unknown as PluginSettings
+  const render = RENDERERS[settings.displayMode]
+  const rules: string[] = []
+
+  for (const [uuid, tagName] of decoratedBlocks) {
+    const callout = getCallout(tagName)
+    if (!callout) continue
+    rules.push(...render({
+      sel: `.ls-block[blockid="${uuid}"]`,
+      t: COLOR_GROUPS[callout.colorGroup],
+      callout,
+      settings,
+    }))
+  }
   return rules.join('\n')
 }
 
@@ -299,33 +313,32 @@ async function scanBlockTree(
   }
 }
 
+interface BlockTagLike { originalName?: string; name?: string }
+
+/** Return the first callout tag name found in a block.tags / block.refs list. */
+function matchCalloutInTagList(list: unknown): string | null {
+  if (!Array.isArray(list)) return null
+  for (const tag of list as BlockTagLike[]) {
+    const name = (tag.originalName ?? tag.name ?? '').toLowerCase()
+    if (DEFAULT_CALLOUTS[name]) return name
+  }
+  return null
+}
+
 async function findCalloutTag(uuid: string): Promise<string | null> {
   try {
     const block = await logseq.Editor.getBlock(uuid)
     if (!block) return null
 
-    const blockAny = block as Record<string, unknown>
+    // DB graph proper tags first, then inline #refs.
+    const fromTags = matchCalloutInTagList((block as { tags?: unknown }).tags)
+    if (fromTags) return fromTags
 
-    // Check block/tags (DB graph proper tags)
-    const tags = blockAny.tags as Array<{ originalName?: string; name?: string }> | undefined
-    if (tags && Array.isArray(tags)) {
-      for (const tag of tags) {
-        const name = (tag.originalName ?? tag.name ?? '').toLowerCase()
-        if (DEFAULT_CALLOUTS[name]) return name
-      }
-    }
+    const fromRefs = matchCalloutInTagList((block as { refs?: unknown }).refs)
+    if (fromRefs) return fromRefs
 
-    // Check block/refs (includes inline #refs)
-    const refs = blockAny.refs as Array<{ originalName?: string; name?: string }> | undefined
-    if (refs && Array.isArray(refs)) {
-      for (const ref of refs) {
-        const name = (ref.originalName ?? ref.name ?? '').toLowerCase()
-        if (DEFAULT_CALLOUTS[name]) return name
-      }
-    }
-
-    // Fallback: scan block text for #tag patterns.
-    // BlockEntity.content is deprecated in @logseq/libs 0.3.x — prefer title.
+    // Fallback: scan block text. BlockEntity.content is deprecated in
+    // @logseq/libs 0.3.x — prefer title.
     const text = ((block.title as string | undefined) ?? block.content ?? '').toLowerCase()
     for (const tagName of Object.keys(DEFAULT_CALLOUTS)) {
       if (text.includes(`#${tagName}`)) return tagName
