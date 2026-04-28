@@ -1,7 +1,32 @@
+# Dependencies & build output
 node_modules/
 dist/
 *.tgz
-.playwright-cli/
-slash-menu.yaml
+
+# Caches
+.vite/
+.cache/
+.turbo/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Env & local overrides
+.env*
+*.local.json
+*.local.ts
+
+# Scratch
+tmp/
+scratch/
+
+# Editor / OS
 .DS_Store
+Thumbs.db
+.idea/
+
+# Agent / tool artifacts
+.playwright-cli/
 .claude/settings.local.json
+slash-menu.yaml

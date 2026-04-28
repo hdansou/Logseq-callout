@@ -62,7 +62,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 - **Language:** TypeScript (ES2020 target)
 - **Build:** Vite + terser minification
-- **SDK:** @logseq/libs ^0.2.12
+- **SDK:** @logseq/libs ^0.3.2
 - **Test:** Manual — load plugin in Logseq web app at localhost:3001
 - **Deploy:** `npm run build` → dist/
 

@@ -70,6 +70,10 @@ npm run typecheck # TypeScript type check
 
 Load in Logseq: Settings → Advanced → Developer mode → Plugins → "Load plugin from web url" → `http://localhost:8080`
 
+## Privacy
+
+All processing is local. The plugin reads blocks on the active page through the Logseq SDK and injects CSS into the host document — it makes no network requests and stores no data outside Logseq.
+
 ## License
 
 MIT

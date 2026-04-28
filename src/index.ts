@@ -1,6 +1,6 @@
 import '@logseq/libs'
 import type { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin'
-import { DEFAULT_CALLOUTS, getCallout, COLOR_GROUPS, ICON_COLORS, getIconCode } from './callouts'
+import { DEFAULT_CALLOUTS, getCallout, COLOR_GROUPS, getIconCode } from './callouts'
 import { generateAllStyles } from './styles'
 
 type DisplayMode = 'icon' | 'inline' | 'container'
@@ -50,7 +50,7 @@ const SETTINGS_SCHEMA: SettingSchemaDesc[] = [
 const decoratedBlocks = new Map<string, string>()
 
 /**
- * Generate per-block dynamic CSS including background, icon, and badge.
+ * Generate per-block dynamic CSS for the active display mode.
  * Targets blocks by [blockid="uuid"] attribute selector.
  */
 function generateDynamicCSS(): string {
@@ -63,7 +63,6 @@ function generateDynamicCSS(): string {
     if (!callout) continue
     const t = COLOR_GROUPS[callout.colorGroup]
     const sel = `.ls-block[blockid="${uuid}"]`
-    const iconContent = `"\\${getIconCode(callout.icon)}"`
 
     if (mode === 'icon') {
       // === Icon mode: colored left border (GitHub-style) + node icon ===
