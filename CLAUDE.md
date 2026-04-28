@@ -20,7 +20,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ### 4. Verification Before Done
 - Never mark a task complete without proving it works
-- Run `npm run typecheck` after changes; test in Logseq at localhost:3001
+- Run `pnpm typecheck` after changes; test in Logseq at localhost:3001
 - Ask yourself: "Would a staff engineer approve this?"
 
 ### 5. Demand Elegance (Balanced)
@@ -34,7 +34,7 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 1. **Requirements first** — Update docs with what we're about to build
 2. **Tasks** — Create task list in `tasks/todo.md`, commit docs + tasks
-3. **Code** — Implement, verify with `npm run typecheck`
+3. **Code** — Implement, verify with `pnpm typecheck`
 4. **Test** — Load plugin in Logseq, verify behavior manually
 5. **Deploy** — Build and release
 
@@ -63,17 +63,18 @@ This file provides guidance to Claude Code when working with code in this reposi
 - **Language:** TypeScript (ES2020 target)
 - **Build:** Vite + terser minification
 - **SDK:** @logseq/libs ^0.3.2
+- **Package manager:** pnpm (pinned via `packageManager` field; `pnpm-lock.yaml` is the source of truth)
 - **Test:** Manual — load plugin in Logseq web app at localhost:3001
-- **Deploy:** `npm run build` → dist/
+- **Deploy:** `pnpm build` → dist/
 
 ## Commands
 
 ```bash
-npm install       # Install dependencies
-npm run build     # Production build → dist/ (terser minification, no sourcemaps)
-npm run watch     # Rebuild dist/ on file changes (no HTTP server)
-npm run dev       # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
-npm run typecheck # TypeScript type check only
+pnpm install     # Install dependencies
+pnpm build       # Production build → dist/ (terser minification, no sourcemaps)
+pnpm watch       # Rebuild dist/ on file changes (no HTTP server)
+pnpm dev         # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
+pnpm typecheck   # TypeScript type check only
 ```
 
 ## Testing
@@ -86,8 +87,8 @@ cd /Users/dzu/Projects/src/github.com/logseq && yarn watch
 
 Loading the plugin requires two processes:
 
-1. **Build watcher** — `npm run watch`
-2. **Dev server** — `npm run dev`
+1. **Build watcher** — `pnpm watch`
+2. **Dev server** — `pnpm dev`
 
 Then in Logseq: Settings → Advanced → Enable Developer mode → Plugins → ⋮ → "Load plugin from web url" → `http://localhost:8080`
 

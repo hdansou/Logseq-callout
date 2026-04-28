@@ -61,11 +61,11 @@ Slash commands are registered for all 28 callout types (e.g. `/Callout: Warning`
 ## Development
 
 ```bash
-npm install       # Install dependencies
-npm run build     # Production build → dist/
-npm run watch     # Rebuild on file changes
-npm run dev       # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
-npm run typecheck # TypeScript type check
+pnpm install     # Install dependencies
+pnpm build       # Production build → dist/
+pnpm watch       # Rebuild on file changes
+pnpm dev         # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
+pnpm typecheck   # TypeScript type check
 ```
 
 Load in Logseq: Settings → Advanced → Developer mode → Plugins → "Load plugin from web url" → `http://localhost:8080`

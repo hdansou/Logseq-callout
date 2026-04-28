@@ -54,7 +54,7 @@ Paste each top-level bullet as a block in Logseq. Indented bullets are child blo
 - Steps to configure the project #tip
   - Clone the repository
   - Copy `.env.example` to `.env`
-  - Run `npm install`
+  - Run `pnpm install`
     - Use Node 20+ for compatibility
 
 - The quick brown fox #quote

@@ -16,7 +16,7 @@ Colors use Logseq's Radix tokens (`--rx-{color}-{step}-alpha`).
 
 ## Commands
 
-- `npm run build` — Production build
-- `npm run typecheck` — Type check only
-- `npm run serve` — Dev server with HMR
-- `npm run watch` — Rebuild on changes
+- `pnpm build` — Production build
+- `pnpm typecheck` — Type check only
+- `pnpm dev` — Dev server with HMR
+- `pnpm watch` — Rebuild on changes
