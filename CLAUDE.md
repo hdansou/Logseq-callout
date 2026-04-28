@@ -139,11 +139,10 @@ Cascade to children uses `margin-left: 0` to override Logseq's default `.block-c
 
 ## Known Issues
 
-- `getCurrentPage()` returns null on journal pages — worked around via `formatJournalDate()` fallback using `getUserConfigs().preferredDateFormat`
+- `getCurrentPage()` returns null on journal pages — fall back to `logseq.Editor.getTodayPage()` (only resolves the *current* journal, past journals remain unsupported)
 - Cross-origin: plugin iframe at `:8080` cannot access `parent.document` directly — all DOM targeting uses `provideStyle()` CSS injection instead
 - `provideStyle()` uses keyed replacement (`callout-base` and `callout-dynamic`) to avoid accumulating stale `<style>` elements
 - Icon mode's `setBlockIcon()` persists icons as block properties — they remain after plugin unload (by design)
-- `formatJournalDate()` ignores the `_format` parameter and hardcodes `MMM do, yyyy` — will fail for users with non-default date formats
 
 ## Conventions
 

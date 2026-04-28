@@ -62,11 +62,9 @@ re-run and compare.
 
 ### Deferred (carried from previous audit / opportunities found)
 
-- [ ] **Fix `formatJournalDate` ignoring format parameter** —
-      `src/index.ts:345`. The `_format` argument is unused; function
-      hardcodes `MMM do, yyyy`. New SDK has `logseq.App.getTodayPage()`
-      which obsoletes this workaround. Prefer swapping in the new API over
-      parsing the format string. Separate PR after SDK bump lands.
+- [x] **Fix `formatJournalDate` ignoring format parameter** —
+      Replaced the date-format workaround with `logseq.Editor.getTodayPage()`.
+      `formatJournalDate` deleted entirely.
 
 - [ ] **Replace slash-command text mutation with `Editor.addBlockTag()`** —
       DB graphs have proper tag APIs (`addBlockTag`, `getTagsByName`,

@@ -254,17 +254,9 @@ async function scanAndDecorate(): Promise<void> {
   decoratedBlocks.clear()
 
   try {
-    let page = await logseq.Editor.getCurrentPage()
-
-    if (!page) {
-      // Journal pages: getCurrentPage returns null. Use date format to find page.
-      const info = await logseq.App.getUserConfigs()
-      const journalName = formatJournalDate(new Date(), info.preferredDateFormat)
-      if (journalName) {
-        page = await logseq.Editor.getPage(journalName)
-      }
-    }
-
+    // getCurrentPage returns null on journal pages — fall back to getTodayPage.
+    // (Past-journal pages remain unsupported; neither API resolves them.)
+    const page = (await logseq.Editor.getCurrentPage()) ?? (await logseq.Editor.getTodayPage())
     if (!page) return
 
     const blocks = await logseq.Editor.getPageBlocksTree(page.name as string ?? page.uuid)
@@ -348,18 +340,6 @@ async function findCalloutTag(uuid: string): Promise<string | null> {
   } catch {
     return null
   }
-}
-
-function formatJournalDate(date: Date, _format: string): string {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  const month = months[date.getMonth()]
-  const day = date.getDate()
-  const year = date.getFullYear()
-  const suffix = (day === 1 || day === 21 || day === 31) ? 'st'
-    : (day === 2 || day === 22) ? 'nd'
-    : (day === 3 || day === 23) ? 'rd'
-    : 'th'
-  return `${month} ${day}${suffix}, ${year}`
 }
 
 let scanTimer: ReturnType<typeof setTimeout> | undefined
