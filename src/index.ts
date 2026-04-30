@@ -318,14 +318,48 @@ async function scanBlockTree(
   }
 }
 
-interface BlockTagLike { originalName?: string; name?: string }
+interface BlockTagLike { originalName?: string; name?: string; id?: number }
 
-/** Return the first callout tag name found in a block.tags / block.refs list. */
-function matchCalloutInTagList(list: unknown): string | null {
+/**
+ * Resolve a tag's entity id to a callout tag name (or null when the tag is
+ * not one of ours). Cached for the session — tag ids are stable.
+ */
+const tagIdCache = new Map<number, string | null>()
+
+async function resolveTagId(id: number): Promise<string | null> {
+  const cached = tagIdCache.get(id)
+  if (cached !== undefined) return cached
+  try {
+    const tag = await logseq.Editor.getTag(id)
+    const name = (tag?.originalName ?? tag?.name ?? '').toLowerCase()
+    const matched = name && DEFAULT_CALLOUTS[name] ? name : null
+    tagIdCache.set(id, matched)
+    return matched
+  } catch {
+    tagIdCache.set(id, null)
+    return null
+  }
+}
+
+/**
+ * Return the first callout tag name found in a block.tags / block.refs list.
+ * Handles two shapes from the SDK:
+ *   - DB graphs (current): `{ id: number }` — resolved via getTag(id).
+ *   - Older / file graphs:  `{ originalName, name }` — read directly.
+ */
+async function matchCalloutInTagList(list: unknown): Promise<string | null> {
   if (!Array.isArray(list)) return null
-  for (const tag of list as BlockTagLike[]) {
-    const name = (tag.originalName ?? tag.name ?? '').toLowerCase()
-    if (DEFAULT_CALLOUTS[name]) return name
+  for (const item of list) {
+    if (!item || typeof item !== 'object') continue
+    const t = item as BlockTagLike
+
+    const directName = (t.originalName ?? t.name ?? '').toLowerCase()
+    if (directName && DEFAULT_CALLOUTS[directName]) return directName
+
+    if (typeof t.id === 'number') {
+      const resolved = await resolveTagId(t.id)
+      if (resolved) return resolved
+    }
   }
   return null
 }
@@ -336,21 +370,21 @@ async function findCalloutTag(uuid: string): Promise<string | null> {
     if (!block) return null
 
     // DB graph proper tags first, then inline #refs.
-    const fromTags = matchCalloutInTagList((block as { tags?: unknown }).tags)
+    const fromTags = await matchCalloutInTagList((block as { tags?: unknown }).tags)
     if (fromTags) return fromTags
 
-    const fromRefs = matchCalloutInTagList((block as { refs?: unknown }).refs)
+    const fromRefs = await matchCalloutInTagList((block as { refs?: unknown }).refs)
     if (fromRefs) return fromRefs
 
-    // Fallback: scan block text. BlockEntity.content is deprecated in
-    // @logseq/libs 0.3.x — prefer title.
+    // Fallback: scan block text for #tagname literals (file graphs only —
+    // DB graphs put the tag in block.tags and the title carries no '#').
     const text = ((block.title as string | undefined) ?? block.content ?? '').toLowerCase()
     for (const tagName of Object.keys(DEFAULT_CALLOUTS)) {
       if (text.includes(`#${tagName}`)) return tagName
     }
-
     return null
-  } catch {
+  } catch (err) {
+    console.warn('[callout] findCalloutTag error:', err)
     return null
   }
 }

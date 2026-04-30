@@ -6,6 +6,14 @@ All notable changes to **logseq-callout** are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+- Detect DB-graph tags returned as `{ id: <number> }` references by
+  resolving the id through `Editor.getTag(id)`. Previously the detection
+  only handled the `{ originalName, name }` shape, so on DB graphs no
+  callouts matched and inline/container modes silently produced no
+  styling (icons still appeared because `setBlockIcon` had persisted them
+  to the block as a property).
+
 ### Changed
 - Upgrade `@logseq/libs` from `^0.2.12` to `^0.3.2`.
 - Tag detection now reads `block.title` (with `block.content` fallback) —
