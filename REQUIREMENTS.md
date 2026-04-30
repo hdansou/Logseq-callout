@@ -19,6 +19,7 @@ in favor of `BlockEntity.title`; the plugin reads `block.title` with
 | ID | Requirement |
 |----|-------------|
 | F-TD-1 | The plugin shall detect callout tags on blocks via three mechanisms, checked in order: (1) `block.tags` array (DB graph proper tags), (2) `block.refs` array (inline `#refs`), (3) text scan of `block.title` (falling back to the deprecated `block.content`) for `#tagname` patterns. |
+| F-TD-1a | In DB graphs the SDK returns `block.tags` / `block.refs` entries as bare `{ id: number }` references with no name attached. The plugin shall resolve each id via `Editor.getTag(id)` to recover the tag's `originalName` / `name`, and cache the resolution per session (entity ids are stable). The legacy `{ originalName, name }` shape from file-based graphs shall continue to be accepted directly. |
 | F-TD-2 | Tag matching shall be case-insensitive. |
 | F-TD-3 | Only the first matching callout tag on a block shall be used for styling. |
 | F-TD-4 | The plugin shall support 28 predefined callout tags across 7 color groups (see Section 4). |
@@ -28,7 +29,7 @@ in favor of `BlockEntity.title`; the plugin reads `block.title` with
 | ID | Requirement |
 |----|-------------|
 | F-PS-1 | On page load, the plugin shall scan all blocks on the current page by traversing the full block tree via `getPageBlocksTree()`. |
-| F-PS-2 | On journal pages where `getCurrentPage()` returns null, the plugin shall fall back to resolving the page name via `formatJournalDate()` using the user's configured date format. |
+| F-PS-2 | On journal pages where `getCurrentPage()` returns null, the plugin shall fall back to `Editor.getTodayPage()` to resolve today's journal. Past-journal pages remain unsupported (neither API resolves them). |
 | F-PS-3 | The plugin shall re-scan on route changes (page navigation) with a 500ms debounce. |
 | F-PS-4 | The plugin shall re-scan on DB changes (block edits) with a 300ms debounce. |
 | F-PS-5 | The plugin shall re-scan on settings changes with a 100ms debounce. |
@@ -79,7 +80,7 @@ The plugin supports three display modes, configurable via settings:
 | ID | Requirement |
 |----|-------------|
 | F-SC-1 | The plugin shall register a slash command for each of the 28 callout tags, named `Callout: {Label}` (e.g. `Callout: Warning`). |
-| F-SC-2 | Invoking a slash command shall append `#{tagname}` to the current block's content if not already present. |
+| F-SC-2 | Invoking a slash command shall attach the corresponding tag to the current block via `Editor.addBlockTag()`, resolving the tag page through `Editor.getTagsByName()` (creating it via `Editor.createTag()` if it does not yet exist). The block's content shall not be mutated. |
 | F-SC-3 | Invoking a slash command shall also set the block's node icon via `setBlockIcon()`, regardless of the active display mode. |
 
 ### 2.6 Cleanup
@@ -221,7 +222,7 @@ Supported color groups: **purple**, **yellow**, **blue**, **green**, **teal**, *
 
 | ID | Limitation |
 |----|------------|
-| L-1 | `getCurrentPage()` returns null on journal pages; the workaround assumes the default Logseq date format (`MMM do, yyyy`). |
+| L-1 | `getCurrentPage()` returns null on journal pages; `getTodayPage()` is used as a fallback. Past-journal pages (anything other than today's) are not detected — neither API resolves them. |
 | L-2 | ~~Resolved~~ — `provideStyle()` now uses keyed replacement (`callout-base`, `callout-dynamic`) to avoid accumulating stale style tags. |
 | L-3 | The `:has()` CSS selector (used in inline/container mode cascade) is not supported in Firefox versions before 121. |
 | L-4 | Icon mode's `setBlockIcon()` persists the icon as a block property. Disabling the plugin does not remove previously set icons. |

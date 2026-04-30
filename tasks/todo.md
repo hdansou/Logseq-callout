@@ -56,9 +56,9 @@ re-run and compare.
 - [x] **4a. Typecheck + build** — `npm run typecheck` clean;
       `npm run build` produced `dist/` without errors.
 
-- [ ] **4b. Manual verify at localhost:3001** — run the verification plan
-      above: load plugin, exercise all three display modes on `test-data.md`,
-      run slash command, confirm no console errors.
+- [x] **4b. Manual verify at localhost:3001** — Verified on 2026-04-29
+      after the DB-graph tag-detection regression fix. Container mode now
+      shows backgrounds, borders, and floating badges as expected.
 
 ### Deferred (carried from previous audit / opportunities found)
 
@@ -70,6 +70,15 @@ re-run and compare.
       Slash command now resolves the tag page via `getTagsByName` (or
       creates it via `createTag`) and attaches it through `addBlockTag`.
       Block content is no longer mutated. CHANGELOG updated.
+
+- [x] **Fix DB-graph tag detection regression (2026-04-29)** —
+      `getBlock()` returns `block.tags` / `block.refs` entries as
+      `{ id: number }` references in DB graphs. The detection code only
+      knew the `{ originalName, name }` shape and silently produced no
+      CSS for inline/container modes. Resolved each id via
+      `Editor.getTag(id)` with a per-session cache. REQUIREMENTS F-TD-1a
+      and CHANGELOG `### Fixed` document the fix; lesson saved to
+      `tasks/lessons.md` and as a cross-project memory.
 
 ### Completed (previous audit)
 
@@ -85,6 +94,14 @@ re-run and compare.
 - 2026-04-18: Bumped @logseq/libs to 0.3.2, migrated `block.content` →
   `block.title` fallback, removed `setBlockIcon` defensive cast. Typecheck
   and build both clean. Awaiting manual verification at localhost:3001.
+- 2026-04-27/28: Production-readiness pass — A+C+E cleanup, dependency
+  CVE patches (vite + 3 overrides), pnpm migration, B1+B2 renderer
+  refactor, A3 (`getTodayPage`) + B3 (`addBlockTag`) deferred items.
+- 2026-04-29: Caught a DB-graph regression — inline/container styling
+  silently dropped because `getBlock()` returns tag refs as `{id}` only.
+  Diagnosed via temporary console logs (now removed); fixed with a
+  cached `getTag(id)` resolver; manual verification at localhost:3001
+  confirms container mode now renders correctly.
 
 ### Review
 
