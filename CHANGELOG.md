@@ -25,6 +25,10 @@ All notable changes to **logseq-callout** are documented here. Format follows
   mutated; the tag binding is what drives styling.
 - Journal-page fallback uses `Editor.getTodayPage()` instead of a hand-rolled
   date-format workaround. Past-journal pages remain unsupported.
+- Renamed `#query` → `#search` (label "Search", same blue color, same
+  `search` glyph). The old `#query` tag is no longer recognised.
+- Renamed `#quote` → `#snippet` (label "Snippet", same purple color, same
+  `quote` glyph). The old `#quote` tag is no longer recognised.
 
 ### Removed
 - Defensive `Record<string, unknown>` cast around

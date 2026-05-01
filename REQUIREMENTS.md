@@ -129,7 +129,7 @@ The plugin supports three display modes, configurable via settings:
 
 | Tag | Label | Icon (tabler) | Color Group |
 |-----|-------|---------------|-------------|
-| `quote` | Quote | quote | purple |
+| `snippet` | Snippet | quote | purple |
 | `cite` | Cite | blockquote | purple |
 | `warning` | Warning | alert-triangle | yellow |
 | `caution` | Caution | alert-triangle | yellow |
@@ -149,7 +149,7 @@ The plugin supports three display modes, configurable via settings:
 | `note` | Note | pencil | blue |
 | `example` | Example | code | purple |
 | `src` | Src | code | teal |
-| `query` | Query | search | blue |
+| `search` | Search | search | blue |
 | `latex` | LaTeX | math | purple |
 | `pinned` | Pinned | pin | orange |
 | `export` | Export | file-export | teal |

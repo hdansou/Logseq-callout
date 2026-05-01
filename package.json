@@ -4,12 +4,7 @@
   "version": "0.1.0",
   "author": "Danzu",
   "license": "MIT",
-  "theme": false,
-  "web": true,
-  "supportsDB": true,
   "supportsDBOnly": true,
-  "effect": true,
-  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

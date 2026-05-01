@@ -121,9 +121,9 @@ Then in Logseq: Settings → Advanced → Enable Developer mode → Plugins → 
 
 | Tag | Icon | Color |
 |-----|------|-------|
-| quote, cite, verse, example, latex | blockquote, code, math | purple |
+| snippet, cite, verse, example, latex | blockquote, code, math | purple |
 | warning, caution, attention | alert-triangle, bell-ringing | yellow |
-| question, help, faq, note, query, center, comment | help-circle, lifebuoy, pencil, search, etc. | blue |
+| question, help, faq, note, search, center, comment | help-circle, lifebuoy, pencil, search, etc. | blue |
 | success, check, done | circle-check, check, checklist | green |
 | abstract, summary, tldr, src, export, ascii | file-text, list, bolt, code, terminal | teal |
 | important, danger | urgent, alert-octagon | red |

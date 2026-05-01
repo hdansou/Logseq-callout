@@ -128,7 +128,7 @@ export function getIconCode(iconName: string): string {
  * Default callout definitions — starter pack.
  */
 export const DEFAULT_CALLOUTS: Record<string, CalloutDef> = {
-  quote:     { icon: 'quote',            iconId: 'Blockquote',       label: 'Quote',     colorGroup: 'purple' },
+  snippet:   { icon: 'quote',            iconId: 'Blockquote',       label: 'Snippet',   colorGroup: 'purple' },
   cite:      { icon: 'blockquote',       iconId: 'Blockquote',       label: 'Cite',      colorGroup: 'purple' },
 
   warning:   { icon: 'alert-triangle',   iconId: 'AlertTriangle',    label: 'Warning',   colorGroup: 'yellow' },
@@ -156,7 +156,7 @@ export const DEFAULT_CALLOUTS: Record<string, CalloutDef> = {
   example:   { icon: 'code',             iconId: 'Code',             label: 'Example',   colorGroup: 'purple' },
 
   src:       { icon: 'code',             iconId: 'Code',             label: 'Src',       colorGroup: 'teal' },
-  query:     { icon: 'search',           iconId: 'Search',           label: 'Query',     colorGroup: 'blue' },
+  search:    { icon: 'search',           iconId: 'Search',           label: 'Search',    colorGroup: 'blue' },
   latex:     { icon: 'math',             iconId: 'Math',             label: 'LaTeX',     colorGroup: 'purple' },
   pinned:    { icon: 'pin',              iconId: 'Pin',              label: 'Pinned',    colorGroup: 'orange' },
   export:    { icon: 'file-export',      iconId: 'FileExport',       label: 'Export',    colorGroup: 'teal' },

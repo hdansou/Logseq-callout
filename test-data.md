@@ -4,7 +4,7 @@ Paste each top-level bullet as a block in Logseq. Indented bullets are child blo
 
 ## All 28 Callouts (flat)
 
-- This is a quote from a famous author #quote
+- This is an excerpt from a famous source #snippet
 - Citing a reference source here #cite
 - Be careful with this operation #warning
 - Proceed with caution when editing #caution
@@ -57,7 +57,7 @@ Paste each top-level bullet as a block in Logseq. Indented bullets are child blo
   - Run `pnpm install`
     - Use Node 20+ for compatibility
 
-- The quick brown fox #quote
+- The quick brown fox #snippet
   - jumped over the lazy dog
   - and then sat down for tea
     - with biscuits and jam

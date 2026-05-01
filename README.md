@@ -12,7 +12,7 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 
 | Tag          | Label     | Icon             | Color  |
 | ------------ | --------- | ---------------- | ------ |
-| `#quote`     | Quote     | quote            | purple |
+| `#snippet`   | Snippet   | quote            | purple |
 | `#cite`      | Cite      | blockquote       | purple |
 | `#warning`   | Warning   | alert-triangle   | yellow |
 | `#caution`   | Caution   | alert-triangle   | yellow |
@@ -32,7 +32,7 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 | `#note`      | Note      | pencil           | blue   |
 | `#example`   | Example   | code             | purple |
 | `#src`       | Src       | code             | teal   |
-| `#query`     | Query     | search           | blue   |
+| `#search`    | Search    | search           | blue   |
 | `#latex`     | LaTeX     | math             | purple |
 | `#pinned`    | Pinned    | pin              | orange |
 | `#export`    | Export    | file-export      | teal   |
