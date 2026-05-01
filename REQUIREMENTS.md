@@ -130,8 +130,10 @@ The plugin supports three display modes, configurable via settings:
 | ID | Requirement |
 |----|-------------|
 | N-CM-1 | The plugin shall target ES2020. |
-| N-CM-2 | The plugin shall declare `web: true` for web app compatibility. |
-| N-CM-3 | The plugin shall only support DB graphs (`supportsDBOnly: true`). |
+| N-CM-2 | The plugin shall declare `web: true` in `package.json` for web app compatibility. |
+| N-CM-3 | The plugin shall only support DB graphs (`supportsDBOnly: true`). The redundant `supportsDB` flag is implied and shall be omitted. |
+| N-CM-4 | The plugin shall declare `effect: true` to mark itself as having runtime side effects (settings registration, event listeners, dynamic style injection) rather than a pure renderer. |
+| N-CM-5 | The plugin shall pin its package manager via the `packageManager` field (`pnpm@<version>`) so Corepack-aware environments use a deterministic pnpm release. |
 
 ---
 
