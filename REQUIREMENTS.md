@@ -66,11 +66,21 @@ The plugin supports three display modes, configurable via settings:
 | F-IC-3 | When "Cascade to Children" is enabled, the left border shall extend to `.block-children-container` with `margin-left: 0` to stay flush with the parent. |
 | F-IC-4 | Node icons set by this mode persist as block properties even after plugin unload (set-and-forget). |
 
+#### 2.3.4 Admonition Mode
+
+| ID | Requirement |
+|----|-------------|
+| F-AD-1 | The tagged block's native node icon shall be set via `logseq.Editor.setBlockIcon()` (same mechanism as Icon mode), so the icon renders as Logseq's solid coloured glyph rather than a CSS-only character. |
+| F-AD-2 | A vertical accent bar in the callout's color shall be rendered between the bullet/icon column and the content via a positioned `::before` pseudo-element on `.block-control-wrap`. The bar shall be ~1.95em tall (vertically centered) so it extends slightly past the natural single-line block height without dominating multi-line blocks. |
+| F-AD-3 | The block's `.block-main-container` shall receive vertical breathing room (`margin: 0.4em 0`) so consecutive admonition blocks do not visually crowd. No background tint, border-radius, padding, or font-size adjustment shall be applied. |
+| F-AD-4 | When "Cascade to Children" is enabled, an accent-colored `border-left` shall extend down `.block-children-container` (with `margin-left: 18px` and compensating `padding-left: 11px` to preserve Logseq's 29px content indent) so the bar visually continues through nested children. |
+| F-AD-5 | "Show Label" and "Show Icon" settings have no effect in admonition mode — the visual identity is the bar plus the native block icon, both unconditional. |
+
 ### 2.4 Settings
 
 | ID | Setting | Type | Default | Requirement |
 |----|---------|------|---------|-------------|
-| F-ST-1 | Display Mode | enum: `icon`, `inline`, `container` | `inline` | Controls which display mode is active for all callout blocks. |
+| F-ST-1 | Display Mode | enum: `icon`, `inline`, `container`, `admonition` | `inline` | Controls which display mode is active for all callout blocks. |
 | F-ST-2 | Cascade to Children | boolean | `true` | When enabled, callout styling extends to child blocks of tagged blocks. |
 | F-ST-3 | Show Label | boolean | `true` | When enabled, the callout type label (e.g. "Warning") is shown in the badge. |
 | F-ST-4 | Show Icon | boolean | `true` | When enabled, the tabler icon is shown in the badge. |

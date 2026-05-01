@@ -4,7 +4,7 @@ import type { CalloutDef, ColorTokens } from './callouts'
 import { DEFAULT_CALLOUTS, getCallout, COLOR_GROUPS, getIconCode } from './callouts'
 import { generateAllStyles } from './styles'
 
-type DisplayMode = 'icon' | 'inline' | 'container'
+type DisplayMode = 'icon' | 'inline' | 'container' | 'admonition'
 
 interface PluginSettings {
   displayMode: DisplayMode
@@ -26,12 +26,12 @@ const SETTINGS_SCHEMA: SettingSchemaDesc[] = [
   {
     key: 'displayMode',
     type: 'enum',
-    enumChoices: ['icon', 'inline', 'container'],
+    enumChoices: ['icon', 'inline', 'container', 'admonition'],
     enumPicker: 'select',
     default: 'inline',
     title: 'Display Mode',
     description:
-      'How callout tags are displayed: "icon" sets the node icon only, "inline" adds a colored background band, "container" wraps in a bordered box with a badge.',
+      'How callout tags are displayed: "icon" sets the node icon only, "inline" adds a colored background band, "container" wraps in a bordered box with a badge, "admonition" renders an Asciidoctor-style tinted block with a left accent line.',
   },
   {
     key: 'cascadeToChildren',
@@ -205,10 +205,52 @@ ${sel} > .block-children-container {
   return rules
 }
 
+function renderAdmonitionMode({ sel, t, settings }: RenderCtx): string[] {
+  // Minimal admonition: native block icon (set imperatively via setBlockIcon
+  // in scanAndDecorate, same as icon mode) plus an accent-colored vertical
+  // bar between the bullet/icon column and the content. No background.
+  // The bar is a positioned ::before pseudo so it can extend past the
+  // natural block height (a border-right would be capped at the row height).
+  const rules: string[] = [`
+${sel} > .block-main-container {
+  margin: 0.4em 0;
+}
+${sel} > .block-main-container > .block-control-wrap {
+  position: relative;
+  padding-right: 0.9em;
+  margin-right: 0.6em;
+}
+${sel} > .block-main-container > .block-control-wrap::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 1.95em;
+  background: ${t.border};
+}`]
+
+  // Cascade — extend the accent bar down through child blocks. The
+  // margin-left/padding-left split keeps Logseq's 29px content indent while
+  // anchoring the bar near the parent's separator position.
+  if (settings.cascadeToChildren) {
+    rules.push(`
+${sel} > .block-children-container {
+  border-left: 3px solid ${t.border};
+  margin-left: 18px;
+  padding-left: 11px;
+}`)
+  }
+
+  return rules
+}
+
 const RENDERERS: Record<DisplayMode, Renderer> = {
   icon: renderIconMode,
   inline: renderInlineMode,
   container: renderContainerMode,
+  admonition: renderAdmonitionMode,
 }
 
 /**
@@ -283,8 +325,9 @@ async function scanAndDecorate(): Promise<void> {
   const settings = logseq.settings as unknown as PluginSettings
   const mode = settings.displayMode
 
-  // In icon mode, set node icons on all callout blocks
-  if (mode === 'icon') {
+  // Icon and admonition modes both rely on the native block icon set via
+  // logseq.Editor.setBlockIcon (admonition pairs it with a vertical bar).
+  if (mode === 'icon' || mode === 'admonition') {
     for (const [uuid, tagName] of decoratedBlocks) {
       await setBlockCalloutIcon(uuid, tagName)
     }

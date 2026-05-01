@@ -6,6 +6,13 @@ All notable changes to **logseq-callout** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Admonition display mode** — minimal Asciidoctor-style rendering with a
+  vertical accent bar between the bullet column and the content, paired
+  with the native block icon (set via `Editor.setBlockIcon()`). No
+  background tint, no font-size shift. Cascade extends the bar through
+  nested child blocks. Selectable via the existing Display Mode setting.
+
 ### Fixed
 - Detect DB-graph tags returned as `{ id: <number> }` references by
   resolving the id through `Editor.getTag(id)`. Previously the detection

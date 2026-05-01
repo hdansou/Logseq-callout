@@ -46,6 +46,7 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 - **Inline** (default) — colored background band with icon + label badge
 - **Container** — bordered box with floating badge, seamless child nesting
 - **Icon** — GitHub-style colored left border + sets the native node icon via `setBlockIcon`
+- **Admonition** — minimal Asciidoctor-style: a vertical accent bar between the bullet column and the content, paired with the native node icon. No background tint. Cascade extends the bar through child blocks.
 
 ### Settings
 
