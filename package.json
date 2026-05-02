@@ -1,9 +1,28 @@
 {
   "name": "logseq-callout",
   "description": "Tag-driven callout styling for Logseq blocks — icons, labels, colored backgrounds with nested visual hierarchy",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Danzu",
   "license": "MIT",
+  "private": true,
+  "homepage": "https://github.com/hdansou/Logseq-callout#readme",
+  "bugs": {
+    "url": "https://github.com/hdansou/Logseq-callout/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hdansou/Logseq-callout.git"
+  },
+  "keywords": [
+    "logseq",
+    "logseq-plugin",
+    "logseq-db",
+    "callout",
+    "admonition"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "web": true,
   "supportsDBOnly": true,
   "effect": true,
@@ -25,6 +44,7 @@
   },
   "pnpm": {
     "overrides": {
+      "dompurify": "^3.4.2",
       "lodash-es": "^4.18.0",
       "picomatch": "^4.0.4",
       "postcss": "^8.5.10"
@@ -35,6 +55,7 @@
     "title": "Callout Manager",
     "description": "Tag-driven callout styling — icons, labels, colored backgrounds with nested visual hierarchy",
     "icon": "./icon.svg",
-    "main": "dist/index.html"
+    "main": "dist/index.html",
+    "minSDKVersion": "0.3.2"
   }
 }

@@ -1,8 +1,10 @@
 # Callout Manager
 
-Tag-driven callout styling for Logseq blocks — icons, labels, and colored backgrounds with nested visual hierarchy.
+Tag-driven callout styling for Logseq blocks — icons, labels, and colored backgrounds with nested visual hierarchy. Four display modes (inline, container, icon, admonition), 28 predefined tags across 7 color groups, with optional cascade-to-children.
 
 > **DB graphs only** (`supportsDBOnly: true`)
+
+![Inline mode preview](docs/screenshots/inline.png)
 
 ## Usage
 
@@ -43,10 +45,29 @@ Add a callout tag as an inline ref in any block (e.g. `#warning`, `#tip`, `#ques
 
 ### Display Modes
 
-- **Inline** (default) — colored background band with icon + label badge
-- **Container** — bordered box with floating badge, seamless child nesting
-- **Icon** — GitHub-style colored left border + sets the native node icon via `setBlockIcon`
-- **Admonition** — minimal Asciidoctor-style: a vertical accent bar between the bullet column and the content, paired with the native node icon. No background tint. Cascade extends the bar through child blocks.
+#### Inline (default)
+
+Colored background band with icon + label badge inline on the bullet line.
+
+![Inline mode](docs/screenshots/inline.png)
+
+#### Container
+
+Each callout block wrapped in a bordered, tinted box with a floating uppercase badge above. Children blocks merge into the same box.
+
+![Container mode](docs/screenshots/container.png)
+
+#### Icon
+
+GitHub-style colored left border and the native Logseq node icon (set via `Editor.setBlockIcon`). Lighter than the other modes; useful when you want minimal styling.
+
+![Icon mode](docs/screenshots/icon.png)
+
+#### Admonition
+
+Minimal Asciidoctor-style: a vertical accent bar between the bullet column and the content, paired with the native block icon. No background tint, no font-size shift. Cascade extends the bar through nested child blocks.
+
+![Admonition mode](docs/screenshots/admonition.png)
 
 ### Settings
 

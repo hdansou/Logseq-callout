@@ -4,7 +4,14 @@ All notable changes to **logseq-callout** are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [1.0.0] — 2026-05-01
+
+First marketplace-ready release. Commits to a stable plugin contract:
+the four display modes (`icon`, `inline`, `container`, `admonition`),
+the 28 callout tag names, and the four user-visible settings
+(`displayMode`, `cascadeToChildren`, `showLabel`, `showIcon`) are now
+considered part of the public API. Future breaking changes require a
+2.0.0.
 
 ### Added
 - **Admonition display mode** — minimal Asciidoctor-style rendering with a
@@ -12,6 +19,9 @@ All notable changes to **logseq-callout** are documented here. Format follows
   with the native block icon (set via `Editor.setBlockIcon()`). No
   background tint, no font-size shift. Cascade extends the bar through
   nested child blocks. Selectable via the existing Display Mode setting.
+- LICENSE file (MIT). Marketplace metadata in `package.json` (homepage,
+  bugs, repository, keywords, engines). GitHub Actions workflows for CI
+  and tag-triggered release packaging.
 
 ### Fixed
 - Detect DB-graph tags returned as `{ id: <number> }` references by
