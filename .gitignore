@@ -30,3 +30,11 @@ Thumbs.db
 .playwright-cli/
 .claude/settings.local.json
 slash-menu.yaml
+
+# Internal project docs (kept locally, not shipped to the public repo)
+CLAUDE.md
+.github/copilot-instructions.md
+REFACTOR_BACKLOG.md
+REQUIREMENTS.md
+tasks/
+prototypes/
