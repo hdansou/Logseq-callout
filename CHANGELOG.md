@@ -4,6 +4,58 @@ All notable changes to **logseq-callout** are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **Icon/admonition modes no longer loop.** Every scan re-wrote the block icon,
+  each write bumped the block's `updated-at`, which re-fired `DB.onChanged`,
+  which scheduled another scan — forever. Icons are now set only when the
+  block's current icon differs (`planIconOps`).
+- Overlapping scans could clear and repopulate the decorated set mid-flight,
+  so styling flickered or dropped blocks. Scans are serialised by a
+  generation counter; a stale result is discarded.
+- A DB change on *another* page (sync, second window), including the
+  creation of a new tag page, no longer triggers a rescan of the current page.
+- A stale or invalid `displayMode` in the settings file crashed the scan
+  (`RENDERERS[undefined]`). Settings are now coerced with defaults.
+- Removed the `#tag` substring scan of block text, which matched `#tips`,
+  `#tipping` and URL fragments. DB graphs carry tags structurally.
+- `test-data.md` still referenced the renamed `#query` tag.
+
+### Changed
+- **Stale icons are cleaned up.** When a callout tag is removed, or the
+  display mode switches to `inline`/`container`, the plugin removes the
+  icon it set — but only if the block still carries exactly that icon; a
+  user-chosen icon is never touched.
+- Slash commands no longer write an icon directly; the scan triggered by the
+  new tag applies it when the active mode uses native icons.
+- Detection reads the block tree returned by `getPageBlocksTree` directly
+  instead of one `getBlock` round-trip per block.
+- Removed the global `position: relative` rule that applied to every block
+  on the page; container mode sets it on its own blocks only.
+- Hook subscriptions (`onRouteChanged`, `DB.onChanged`, `onSettingsChanged`)
+  are unsubscribed on unload.
+- Per-scan console logging removed.
+
+### Security
+- Content-Security-Policy meta tag in `index.html` (no remote scripts).
+- Dev server CORS restricted to `http://localhost:3001` / `http://127.0.0.1:3001`.
+- Block uuids are validated before being interpolated into CSS selectors.
+- `pnpm audit` is clean: `vite` 7.3.7; overrides for `dompurify` ^3.4.17
+  (GHSA chain through `@logseq/libs`), `lodash-es` ^4.18.1, `postcss`
+  ^8.5.30, `nanoid` ^3.3.20, `esbuild` ^0.28.2, `source-map-js` ^1.2.2.
+
+### Internal
+- `@logseq/libs` ^0.3.4 (`minSDKVersion` 0.3.4) with a compile-time SDK
+  floor guard (`src/__sdk_guard__.ts`).
+- `src/index.ts` split into a thin SDK adapter plus pure, unit-tested
+  modules: `settings.ts`, `css.ts`, `detect.ts`, `icons.ts`. Vitest with
+  80% coverage thresholds runs in CI and before release.
+- Manifest flags (`web`, `effect`, `supportsDB`, `supportsDBOnly`) moved
+  inside the `logseq` object. Node 24 (`engines`, `.nvmrc`, CI).
+- Dead exports removed (`ICON_COLORS`, `getColorTokens`, `styles.ts`);
+  `getIconCode` throws on an unknown icon instead of substituting a glyph.
+
 ## [1.0.0] — 2026-05-01
 
 First marketplace-ready release. Commits to a stable plugin contract:

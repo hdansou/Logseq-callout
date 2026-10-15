@@ -1,474 +1,117 @@
 import '@logseq/libs'
-import type { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin'
-import type { CalloutDef, ColorTokens } from './callouts'
-import { DEFAULT_CALLOUTS, getCallout, COLOR_GROUPS, getIconCode } from './callouts'
-import { generateAllStyles } from './styles'
+import { DEFAULT_CALLOUTS } from './callouts'
+import { generateDynamicCSS } from './css'
+import { changeTouchesPage, collectCallouts, createTagResolver, indexTree, type TreeBlock } from './detect'
+import { planIconOps, readBlockIcon } from './icons'
+import { readSettings, SETTINGS_SCHEMA, usesNativeIcon } from './settings'
 
-type DisplayMode = 'icon' | 'inline' | 'container' | 'admonition'
+const LOG = '[callout]'
+const STYLE_KEY = 'callout-dynamic'
 
-interface PluginSettings {
-  displayMode: DisplayMode
-  cascadeToChildren: boolean
-  showLabel: boolean
-  showIcon: boolean
+/** uuid → callout tag applied by the last completed scan. */
+let decorated: ReadonlyMap<string, string> = new Map()
+/** Entity id of the page the last scan covered (for DB-change filtering). */
+let scannedPageId: number | undefined
+/** Monotonic scan id; a scan whose id is stale when it finishes is discarded. */
+let generation = 0
+let scanTimer: ReturnType<typeof setTimeout> | undefined
+const offHooks: Array<() => void> = []
+
+const resolveTag = createTagResolver((id) => logseq.Editor.getTag(id))
+
+async function currentPage(): Promise<{ id: number; uuid: string } | null> {
+  // getCurrentPage is null on the journals view; today's journal is the best fallback.
+  // (Past journals are not resolvable through either API.)
+  const page = (await logseq.Editor.getCurrentPage()) ?? (await logseq.Editor.getTodayPage())
+  return page ? { id: page.id, uuid: page.uuid } : null
 }
 
-interface RenderCtx {
-  sel: string
-  t: ColorTokens
-  callout: CalloutDef
-  settings: PluginSettings
-}
-
-type Renderer = (ctx: RenderCtx) => string[]
-
-const SETTINGS_SCHEMA: SettingSchemaDesc[] = [
-  {
-    key: 'displayMode',
-    type: 'enum',
-    enumChoices: ['icon', 'inline', 'container', 'admonition'],
-    enumPicker: 'select',
-    default: 'inline',
-    title: 'Display Mode',
-    description:
-      'How callout tags are displayed: "icon" sets the node icon only, "inline" adds a colored background band, "container" wraps in a bordered box with a badge, "admonition" renders an Asciidoctor-style tinted block with a left accent line.',
-  },
-  {
-    key: 'cascadeToChildren',
-    type: 'boolean',
-    default: true,
-    title: 'Cascade to Children',
-    description: 'Apply callout styling to child blocks of tagged blocks.',
-  },
-  {
-    key: 'showLabel',
-    type: 'boolean',
-    default: true,
-    title: 'Show Label',
-    description: 'Show the callout type label (e.g., "Warning") next to the icon.',
-  },
-  {
-    key: 'showIcon',
-    type: 'boolean',
-    default: true,
-    title: 'Show Icon',
-    description: 'Show the tabler icon on the callout block.',
-  },
-]
-
-/** Track decorated block UUIDs and their callout tag */
-const decoratedBlocks = new Map<string, string>()
-
-// === Per-mode CSS renderers ===
-
-function renderIconMode({ sel, t, settings }: RenderCtx): string[] {
-  // GitHub-style colored left border. Cascade extends the same border to
-  // children; the node icon itself is set imperatively via setBlockIcon.
-  const rules: string[] = [`
-${sel} > .block-main-container {
-  border-left: 3px solid ${t.border};
-  padding-left: 8px;
-}`]
-
-  if (settings.cascadeToChildren) {
-    rules.push(`
-${sel} > .block-children-container {
-  border-left: 3px solid ${t.border};
-  margin-left: 0;
-  padding-left: 29px;
-}`)
+async function applyIconPlan(next: ReadonlyMap<string, string>, tree: TreeBlock[], nativeIcon: boolean): Promise<void> {
+  const index = indexTree(tree)
+  const plan = planIconOps({
+    prev: decorated,
+    next,
+    currentIcon: (uuid) => readBlockIcon(index.get(uuid)),
+    nativeIcon,
+  })
+  for (const { uuid, iconId } of plan.set) {
+    await logseq.Editor.setBlockIcon(uuid, 'tabler-icon', iconId)
   }
-  return rules
-}
-
-function renderInlineMode({ sel, t, callout, settings }: RenderCtx): string[] {
-  const r = 'var(--ls-border-radius-low, 4px)'
-  const rules: string[] = [`
-${sel} > .block-main-container {
-  background: ${t.bg};
-  border-radius: ${r};
-  padding: 4px 4px 4px 0;
-  margin: 2px 0;
-}`]
-
-  // When children exist, flatten bottom corners and remove bottom margin.
-  if (settings.cascadeToChildren) {
-    rules.push(`
-${sel}:has(> .block-children-container) > .block-main-container {
-  border-radius: ${r} ${r} 0 0;
-  margin-bottom: 0;
-}`)
-  }
-
-  // Badge in the block control area.
-  if (settings.showIcon || settings.showLabel) {
-    const iconPart = settings.showIcon ? `\\${getIconCode(callout.icon)}` : ''
-    const labelPart = settings.showLabel ? ` ${callout.label}` : ''
-    rules.push(`
-${sel} > .block-main-container > .block-control-wrap::after {
-  content: "${iconPart}${labelPart}";
-  font-family: "tabler-icons", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: ${t.text};
-  background: ${t.badge};
-  padding: 1px 6px;
-  border-radius: 3px;
-  margin-right: 4px;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-html.dark ${sel} > .block-main-container > .block-control-wrap::after {
-  color: ${t.textDark};
-}`)
-  }
-
-  // Cascade children — pull left to align with parent, round bottom corners.
-  if (settings.cascadeToChildren) {
-    rules.push(`
-${sel} > .block-children-container {
-  background: ${t.bg};
-  border-radius: 0 0 ${r} ${r};
-  margin-left: 0;
-  padding: 2px 4px 4px 29px;
-}`)
-  }
-  return rules
-}
-
-function renderContainerMode({ sel, t, callout, settings }: RenderCtx): string[] {
-  const cascade = settings.cascadeToChildren
-  const r = 'var(--ls-border-radius-medium, 8px)'
-  const rules: string[] = [`
-${sel} > .block-main-container {
-  background: ${t.bg};
-  border: 1px solid ${t.border};
-  border-radius: ${r};
-  padding: 16px 12px 8px 12px;
-  margin: 8px 0;
-  position: relative;
-}`]
-
-  // When cascade is on AND children exist, remove bottom corners + border so
-  // the children container can complete the box seamlessly.
-  if (cascade) {
-    rules.push(`
-${sel}:has(> .block-children-container) > .block-main-container {
-  border-radius: ${r} ${r} 0 0;
-  border-bottom: none;
-  margin-bottom: 0;
-}`)
-  }
-
-  // Floating badge with icon + label.
-  const badgeIcon = settings.showIcon ? `\\${getIconCode(callout.icon)}  ` : ''
-  const badgeLabel = settings.showLabel ? callout.label : ''
-  const badgeContent = badgeIcon + badgeLabel
-  if (badgeContent) {
-    rules.push(`
-${sel} > .block-main-container::before {
-  content: "${badgeContent}";
-  font-family: "tabler-icons", -apple-system, BlinkMacSystemFont, sans-serif;
-  position: absolute;
-  top: -10px;
-  left: 12px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 2px 8px;
-  border-radius: 4px;
-  line-height: 1.5;
-  background: ${t.badge};
-  color: ${t.text};
-  z-index: 1;
-}
-html.dark ${sel} > .block-main-container::before {
-  color: ${t.textDark};
-}`)
-  }
-
-  // Cascade children — wrap in matching border that merges with parent.
-  if (cascade) {
-    rules.push(`
-${sel} > .block-children-container {
-  background: ${t.bg};
-  border: 1px solid ${t.border};
-  border-top: none;
-  border-radius: 0 0 ${r} ${r};
-  margin-left: 0;
-  padding: 4px 12px 8px 29px;
-}`)
-  }
-  return rules
-}
-
-function renderAdmonitionMode({ sel, t, settings }: RenderCtx): string[] {
-  // Minimal admonition: native block icon (set imperatively via setBlockIcon
-  // in scanAndDecorate, same as icon mode) plus an accent-colored vertical
-  // bar between the bullet/icon column and the content. No background.
-  // The bar is a positioned ::before pseudo so it can extend past the
-  // natural block height (a border-right would be capped at the row height).
-  const rules: string[] = [`
-${sel} > .block-main-container {
-  margin: 0.4em 0;
-}
-${sel} > .block-main-container > .block-control-wrap {
-  position: relative;
-  padding-right: 0.9em;
-  margin-right: 0.6em;
-}
-${sel} > .block-main-container > .block-control-wrap::before {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 1.95em;
-  background: ${t.border};
-}`]
-
-  // Cascade — extend the accent bar down through child blocks. The
-  // margin-left/padding-left split keeps Logseq's 29px content indent while
-  // anchoring the bar near the parent's separator position.
-  if (settings.cascadeToChildren) {
-    rules.push(`
-${sel} > .block-children-container {
-  border-left: 3px solid ${t.border};
-  margin-left: 18px;
-  padding-left: 11px;
-}`)
-  }
-
-  return rules
-}
-
-const RENDERERS: Record<DisplayMode, Renderer> = {
-  icon: renderIconMode,
-  inline: renderInlineMode,
-  container: renderContainerMode,
-  admonition: renderAdmonitionMode,
-}
-
-/**
- * Generate per-block dynamic CSS for the active display mode.
- * Targets blocks by [blockid="uuid"] attribute selector.
- */
-function generateDynamicCSS(): string {
-  const settings = logseq.settings as unknown as PluginSettings
-  const render = RENDERERS[settings.displayMode]
-  const rules: string[] = []
-
-  for (const [uuid, tagName] of decoratedBlocks) {
-    const callout = getCallout(tagName)
-    if (!callout) continue
-    rules.push(...render({
-      sel: `.ls-block[blockid="${uuid}"]`,
-      t: COLOR_GROUPS[callout.colorGroup],
-      callout,
-      settings,
-    }))
-  }
-  return rules.join('\n')
-}
-
-/**
- * Set a block's node icon to the callout's tabler icon.
- */
-async function setBlockCalloutIcon(uuid: string, tagName: string): Promise<void> {
-  const callout = getCallout(tagName)
-  if (!callout) return
-  try {
-    await logseq.Editor.setBlockIcon(uuid, 'tabler-icon', callout.iconId)
-  } catch (err) {
-    console.warn('[callout] setBlockIcon error:', err)
+  for (const uuid of plan.remove) {
+    await logseq.Editor.removeBlockIcon(uuid)
   }
 }
 
 /**
- * Attach a callout tag to a block, creating the tag page if needed.
- */
-async function attachCalloutTag(blockUuid: string, tagName: string): Promise<void> {
-  try {
-    const existing = await logseq.Editor.getTagsByName(tagName)
-    const tagPage = existing?.[0] ?? (await logseq.Editor.createTag(tagName))
-    if (tagPage) await logseq.Editor.addBlockTag(blockUuid, tagPage.uuid)
-  } catch (err) {
-    console.warn('[callout] attachCalloutTag error:', err)
-  }
-}
-
-/**
- * Scan the current page for blocks with callout tags.
+ * Scan the current page, inject CSS for every callout block, and reconcile
+ * native icons. Only the newest scan is allowed to publish its result.
  */
 async function scanAndDecorate(): Promise<void> {
-  const oldSize = decoratedBlocks.size
-  decoratedBlocks.clear()
-
+  const myGeneration = ++generation
   try {
-    // getCurrentPage returns null on journal pages — fall back to getTodayPage.
-    // (Past-journal pages remain unsupported; neither API resolves them.)
-    const page = (await logseq.Editor.getCurrentPage()) ?? (await logseq.Editor.getTodayPage())
+    const page = await currentPage()
     if (!page) return
+    const tree = ((await logseq.Editor.getPageBlocksTree(page.uuid)) ?? []) as unknown as TreeBlock[]
+    const next = await collectCallouts(tree, resolveTag)
+    if (myGeneration !== generation) return
 
-    const blocks = await logseq.Editor.getPageBlocksTree(page.name as string ?? page.uuid)
-    if (!blocks) return
+    const settings = readSettings(logseq.settings)
+    if (next.size > 0 || decorated.size > 0) {
+      logseq.provideStyle({ key: STYLE_KEY, style: generateDynamicCSS(next, settings) })
+    }
+    await applyIconPlan(next, tree, usesNativeIcon(settings.displayMode))
 
-    await scanBlockTree(blocks)
+    decorated = next
+    scannedPageId = page.id
   } catch (err) {
-    console.warn('[callout] scan error:', err)
-  }
-
-  const settings = logseq.settings as unknown as PluginSettings
-  const mode = settings.displayMode
-
-  // Icon and admonition modes both rely on the native block icon set via
-  // logseq.Editor.setBlockIcon (admonition pairs it with a vertical bar).
-  if (mode === 'icon' || mode === 'admonition') {
-    for (const [uuid, tagName] of decoratedBlocks) {
-      await setBlockCalloutIcon(uuid, tagName)
-    }
-    if (decoratedBlocks.size > 0) {
-      console.log(`[callout] Set icons on ${decoratedBlocks.size} blocks`)
-    }
-  }
-
-  // Inject CSS for all modes (icon mode has left border, inline/container have full styling)
-  if (decoratedBlocks.size > 0 || oldSize > 0) {
-    logseq.provideStyle({ key: 'callout-dynamic', style: generateDynamicCSS() })
-    if (decoratedBlocks.size > 0) {
-      console.log(`[callout] Styled ${decoratedBlocks.size} blocks`)
-    }
+    console.error(`${LOG} scan failed:`, err)
   }
 }
 
-async function scanBlockTree(
-  blocks: Array<{ uuid: string; children?: unknown[]; title?: string; content?: string }>,
-): Promise<void> {
-  for (const block of blocks) {
-    const tagName = await findCalloutTag(block.uuid)
-    if (tagName) {
-      decoratedBlocks.set(block.uuid, tagName)
-    }
-    if (block.children && Array.isArray(block.children) && block.children.length > 0) {
-      await scanBlockTree(
-        block.children as Array<{ uuid: string; children?: unknown[]; title?: string; content?: string }>,
-      )
-    }
-  }
-}
-
-interface BlockTagLike { originalName?: string; name?: string; id?: number }
-
-/**
- * Resolve a tag's entity id to a callout tag name (or null when the tag is
- * not one of ours). Cached for the session — tag ids are stable.
- */
-const tagIdCache = new Map<number, string | null>()
-
-async function resolveTagId(id: number): Promise<string | null> {
-  const cached = tagIdCache.get(id)
-  if (cached !== undefined) return cached
-  try {
-    const tag = await logseq.Editor.getTag(id)
-    const name = (tag?.originalName ?? tag?.name ?? '').toLowerCase()
-    const matched = name && DEFAULT_CALLOUTS[name] ? name : null
-    tagIdCache.set(id, matched)
-    return matched
-  } catch {
-    tagIdCache.set(id, null)
-    return null
-  }
-}
-
-/**
- * Return the first callout tag name found in a block.tags / block.refs list.
- * Handles two shapes from the SDK:
- *   - DB graphs (current): `{ id: number }` — resolved via getTag(id).
- *   - Older / file graphs:  `{ originalName, name }` — read directly.
- */
-async function matchCalloutInTagList(list: unknown): Promise<string | null> {
-  if (!Array.isArray(list)) return null
-  for (const item of list) {
-    if (!item || typeof item !== 'object') continue
-    const t = item as BlockTagLike
-
-    const directName = (t.originalName ?? t.name ?? '').toLowerCase()
-    if (directName && DEFAULT_CALLOUTS[directName]) return directName
-
-    if (typeof t.id === 'number') {
-      const resolved = await resolveTagId(t.id)
-      if (resolved) return resolved
-    }
-  }
-  return null
-}
-
-async function findCalloutTag(uuid: string): Promise<string | null> {
-  try {
-    const block = await logseq.Editor.getBlock(uuid)
-    if (!block) return null
-
-    // DB graph proper tags first, then inline #refs.
-    const fromTags = await matchCalloutInTagList((block as { tags?: unknown }).tags)
-    if (fromTags) return fromTags
-
-    const fromRefs = await matchCalloutInTagList((block as { refs?: unknown }).refs)
-    if (fromRefs) return fromRefs
-
-    // Fallback: scan block text for #tagname literals (file graphs only —
-    // DB graphs put the tag in block.tags and the title carries no '#').
-    const text = ((block.title as string | undefined) ?? block.content ?? '').toLowerCase()
-    for (const tagName of Object.keys(DEFAULT_CALLOUTS)) {
-      if (text.includes(`#${tagName}`)) return tagName
-    }
-    return null
-  } catch (err) {
-    console.warn('[callout] findCalloutTag error:', err)
-    return null
-  }
-}
-
-let scanTimer: ReturnType<typeof setTimeout> | undefined
-function debouncedScan(delay = 300): void {
+function debouncedScan(delay: number): void {
   clearTimeout(scanTimer)
   scanTimer = setTimeout(scanAndDecorate, delay)
 }
 
-async function main(): Promise<void> {
-  console.log('[callout] Plugin loaded')
+async function attachCalloutTag(blockUuid: string, tagName: string): Promise<void> {
+  const existing = await logseq.Editor.getTagsByName(tagName)
+  const tagPage = existing?.[0] ?? (await logseq.Editor.createTag(tagName))
+  if (!tagPage) throw new Error(`could not resolve or create tag "${tagName}"`)
+  await logseq.Editor.addBlockTag(blockUuid, tagPage.uuid)
+}
 
+async function main(): Promise<void> {
   logseq.useSettingsSchema(SETTINGS_SCHEMA)
 
-  // Inject static base styles (position: relative for container mode badges)
-  logseq.provideStyle({ key: 'callout-base', style: generateAllStyles() })
+  // Initial scan after the page settles.
+  debouncedScan(800)
 
-  // Initial scan after page settles
-  setTimeout(scanAndDecorate, 800)
+  offHooks.push(
+    logseq.App.onRouteChanged(() => debouncedScan(500)),
+    logseq.DB.onChanged((e) => {
+      if (e.blocks?.length && changeTouchesPage(e.blocks, scannedPageId, decorated)) debouncedScan(300)
+    }),
+    logseq.onSettingsChanged(() => debouncedScan(100)),
+  )
 
-  logseq.App.onRouteChanged(() => debouncedScan(500))
-  logseq.DB.onChanged((e) => {
-    if (e.blocks && e.blocks.length > 0) debouncedScan(300)
-  })
-  logseq.onSettingsChanged(() => debouncedScan(100))
-
-  // Slash commands — attach a proper DB tag rather than appending #tag text.
+  // Slash commands attach a proper DB tag; the next scan styles the block.
   for (const [tag, def] of Object.entries(DEFAULT_CALLOUTS)) {
     logseq.Editor.registerSlashCommand(`Callout: ${def.label}`, async () => {
       const block = await logseq.Editor.getCurrentBlock()
       if (!block) return
-      await attachCalloutTag(block.uuid, tag)
-      await setBlockCalloutIcon(block.uuid, tag)
+      try {
+        await attachCalloutTag(block.uuid, tag)
+      } catch (err) {
+        console.error(`${LOG} slash command failed:`, err)
+      }
     })
   }
 
   logseq.beforeunload(async () => {
     clearTimeout(scanTimer)
-    decoratedBlocks.clear()
+    for (const off of offHooks.splice(0)) off()
+    decorated = new Map()
   })
 }
 
-logseq.ready(main).catch(console.error)
+logseq.ready(main).catch((err) => console.error(`${LOG} failed to start:`, err))

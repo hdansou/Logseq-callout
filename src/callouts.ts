@@ -1,5 +1,5 @@
 /**
- * Callout tag definitions — starter pack.
+ * Callout tag definitions.
  *
  * Each callout maps a tag name to:
  * - icon: Tabler icon name (without "ti-" prefix)
@@ -121,11 +121,13 @@ export const TABLER_ICON_CODES: Record<string, string> = {
 }
 
 export function getIconCode(iconName: string): string {
-  return TABLER_ICON_CODES[iconName] ?? 'ea5e'
+  const code = TABLER_ICON_CODES[iconName]
+  if (!code) throw new Error(`[callout] no tabler glyph code for icon "${iconName}"`)
+  return code
 }
 
 /**
- * Default callout definitions — starter pack.
+ * Default callout definitions.
  */
 export const DEFAULT_CALLOUTS: Record<string, CalloutDef> = {
   snippet:   { icon: 'quote',            iconId: 'Blockquote',       label: 'Snippet',   colorGroup: 'purple' },
@@ -166,21 +168,6 @@ export const DEFAULT_CALLOUTS: Record<string, CalloutDef> = {
   comment:   { icon: 'message',          iconId: 'Message',          label: 'Comment',   colorGroup: 'blue' },
 }
 
-/** Hex colors for setBlockIcon, keyed by color group */
-export const ICON_COLORS: Record<ColorGroup, string> = {
-  purple: '#7c3aed',
-  yellow: '#ca8a04',
-  blue:   '#2563eb',
-  green:  '#16a34a',
-  teal:   '#0d9488',
-  red:    '#dc2626',
-  orange: '#ea580c',
-}
-
 export function getCallout(tagName: string): CalloutDef | undefined {
   return DEFAULT_CALLOUTS[tagName.toLowerCase()]
-}
-
-export function getColorTokens(def: CalloutDef): ColorTokens {
-  return COLOR_GROUPS[def.colorGroup]
 }
