@@ -6,6 +6,8 @@ All notable changes to **logseq-callout** are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-10-15
+
 ### Fixed
 - **Badge glyphs for 13 callouts were wrong or blank** (`#tip` showed a grid,
   `#cite` nothing, `#question` an exclamation mark, …). The codepoint table
