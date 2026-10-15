@@ -78,7 +78,9 @@ Minimal Asciidoctor-style: a vertical accent bar between the bullet column and t
 | Show Label          | true    | Show callout type label (e.g. "Warning") |
 | Show Icon           | true    | Show tabler icon on the block            |
 
-Slash commands are registered for all 28 callout types (e.g. `/Callout: Warning`). Using a slash command also sets the node icon.
+Slash commands are registered for all 28 callout types (e.g. `/Callout: Warning`). They attach the tag to the current block; in icon and admonition modes the node icon follows automatically.
+
+In **icon** and **admonition** modes the plugin sets the block's native icon (a block property). When you remove the tag or switch to inline/container mode, the plugin removes that icon again — unless you have since chosen a different icon yourself, which is left alone.
 
 ## Development
 
@@ -88,13 +90,18 @@ pnpm build       # Production build → dist/
 pnpm watch       # Rebuild on file changes
 pnpm dev         # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
 pnpm typecheck   # TypeScript type check
+pnpm test        # Unit tests (vitest) with coverage thresholds
 ```
+
+Requires Node 24 (`.nvmrc`) and pnpm (pinned via `packageManager`).
 
 Load in Logseq: Settings → Advanced → Developer mode → Plugins → "Load plugin from web url" → `http://localhost:8080`
 
 ## Privacy
 
 All processing is local. The plugin reads blocks on the active page through the Logseq SDK and injects CSS into the host document — it makes no network requests and stores no data outside Logseq.
+
+The only writes to your graph are the block icons set in icon and admonition modes (the `icon` property on tagged blocks), and the tag attached when you use a slash command. Nothing is logged.
 
 ## License
 

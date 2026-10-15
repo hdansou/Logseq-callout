@@ -24,7 +24,7 @@ Paste each top-level bullet as a block in Logseq. Indented bullets are child blo
 - Take note of this for later #note
 - Here's an example of usage #example
 - Source code snippet follows #src
-- Database query results below #query
+- Database query results below #search
 - Mathematical formula: E = mc² #latex
 - This item is pinned to the top #pinned
 - Data exported for external use #export
