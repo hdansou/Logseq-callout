@@ -21,33 +21,36 @@
     "admonition"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
-  "web": true,
-  "supportsDBOnly": true,
-  "effect": true,
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "watch": "vite build --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@logseq/libs": "^0.3.2"
+    "@logseq/libs": "^0.3.4"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "terser": "^5.46.0",
-    "typescript": "^5.3.0",
-    "vite": "^7.3.2"
+    "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.0.5",
+    "terser": "^5.51.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.7",
+    "vitest": "^5.0.5"
   },
   "pnpm": {
     "overrides": {
-      "dompurify": "^3.4.2",
-      "lodash-es": "^4.18.0",
-      "picomatch": "^4.0.4",
-      "postcss": "^8.5.10"
+      "dompurify": "^3.4.17",
+      "lodash-es": "^4.18.1",
+      "postcss": "^8.5.30",
+      "nanoid": "^3.3.20",
+      "esbuild": "^0.28.2",
+      "source-map-js": "^1.2.2"
     }
   },
   "logseq": {
@@ -56,6 +59,10 @@
     "description": "Tag-driven callout styling — icons, labels, colored backgrounds with nested visual hierarchy",
     "icon": "./icon.svg",
     "main": "dist/index.html",
-    "minSDKVersion": "0.3.2"
+    "minSDKVersion": "0.3.4",
+    "web": true,
+    "effect": true,
+    "supportsDB": true,
+    "supportsDBOnly": true
   }
 }
