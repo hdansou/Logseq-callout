@@ -1,14 +1,38 @@
 // Runs inside the Logseq host page (injected by callouts-matrix.sh via
 // `playwright-cli eval`). Must stay a single expression with no top-level
 // semicolon and no arrow functions (playwright-cli wraps it in `() => (...)`).
-// __EXPECT__ is replaced with the callout table; __PLUGIN_ID__ with the id.
-void (window.__matrixResult = null, (async function () {
+// Placeholders: __EXPECT__ (callout table), __PLUGIN_ID__, __APPLY__ and
+// __FRAME__ (see applySettings below).
+void (window.__matrixResult = null, window.__matrixProgress = "starting", (async function () {
   var EXPECT = __EXPECT__
   var PAGE = "Callout Matrix"
   var api = window.logseq.api
   var plugin = LSPluginCore._registeredPlugins.get("__PLUGIN_ID__")
   var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms) }) }
   var glyph = function (code) { return String.fromCharCode(parseInt(code, 16)) }
+
+  // How a permutation reaches the plugin:
+  //  "settings": plugin.settings.set(...) — writes the plugin's settings file.
+  //              Fine in the web app; in the desktop app that file is shared
+  //              with the user's running Logseq, so never use it there.
+  //  "override": define a `settings` getter on the plugin frame's `logseq`
+  //              (same origin for dev installs) and emit settings:changed.
+  //              Nothing is written anywhere.
+  var APPLY = "__APPLY__"
+  var frameWin = APPLY === "override" ? document.querySelector('iframe[src*="__FRAME__"]').contentWindow : null
+  var baseSettings = frameWin ? JSON.parse(JSON.stringify(frameWin.logseq.settings)) : null
+  var applySettings = function (s) {
+    if (APPLY === "override") {
+      var merged = Object.assign({}, baseSettings, s)
+      Object.defineProperty(frameWin.logseq, "settings", { configurable: true, get: function () { return merged } })
+      frameWin.logseq.emit("settings:changed", merged, baseSettings)
+    } else {
+      for (var k in s) plugin.settings.set(k, s[k])
+    }
+  }
+  var restoreSettings = function () {
+    if (APPLY === "override") { delete frameWin.logseq.settings; frameWin.logseq.emit("settings:changed", baseSettings, baseSettings) }
+  }
 
   // One block per callout, each with one child so cascade is observable.
   var tree = (await api.get_page_blocks_tree(PAGE)) || []
@@ -31,13 +55,11 @@ void (window.__matrixResult = null, (async function () {
       for (var li = 0; li < 2; li++)
         for (var ii = 0; ii < 2; ii++) {
           var s = { displayMode: modes[mi], cascadeToChildren: bools[ci], showLabel: bools[li], showIcon: bools[ii] }
-          plugin.settings.set("displayMode", s.displayMode)
-          plugin.settings.set("cascadeToChildren", s.cascadeToChildren)
-          plugin.settings.set("showLabel", s.showLabel)
-          plugin.settings.set("showIcon", s.showIcon)
+          applySettings(s)
           var native = s.displayMode === "icon" || s.displayMode === "admonition"
           await sleep(native ? 4000 : 1500)
           var name = s.displayMode + " cascade=" + s.cascadeToChildren + " label=" + s.showLabel + " icon=" + s.showIcon
+          window.__matrixProgress = name
 
           for (var tag in EXPECT) {
             var def = EXPECT[tag]
@@ -82,5 +104,6 @@ void (window.__matrixResult = null, (async function () {
               fail("children background", ks.backgroundColor)
           }
         }
+  restoreSettings()
   return { done: true, permutations: 32, blocksChecked: checked, failures: failures }
 })().then(function (v) { window.__matrixResult = v }, function (e) { window.__matrixResult = { fatal: String(e) } }))

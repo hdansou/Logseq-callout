@@ -30,7 +30,7 @@ EXPECT=$(node --no-warnings -e '
   })')
 
 ev() { playwright-cli eval "$1" 2>&1 | grep -E '^"|^\{|Error' || true; }
-payload() { sed -e "s|__EXPECT__|$EXPECT|" -e "s|__PLUGIN_ID__|$PLUGIN_ID|" "$1"; }
+payload() { sed -e "s|__EXPECT__|$EXPECT|" -e "s|__PLUGIN_ID__|$PLUGIN_ID|" -e "s|__APPLY__|settings|" -e "s|__FRAME__||" "$1"; }
 result() { # poll window.<name> until the payload has stored its result; print the JSON
   local name=$1 tries=${2:-120}
   for ((i = 0; i < tries; i++)); do
@@ -59,7 +59,7 @@ sleep 3
 
 echo "→ running 32 permutations × $(node -e "console.log(Object.keys($EXPECT).length)") callouts (about 2 minutes)"
 playwright-cli eval "$(payload scripts/e2e/matrix.browser.js)" >/dev/null 2>&1
-REPORT=$(result __matrixResult 60)
+REPORT=$(result __matrixResult 120)
 echo "$REPORT" | node -e '
   const raw = require("fs").readFileSync(0, "utf8").trim()
   let r; try { r = JSON.parse(raw) } catch { console.error("unreadable report:", raw); process.exit(4) }

@@ -66,6 +66,8 @@ All notable changes to **logseq-callout** are documented here. Format follows
 - `pnpm e2e` (`scripts/e2e/callouts-matrix.sh`) drives the real Logseq web
   app through every settings permutation and asserts each callout block's
   computed styles: badge text, native icon, cascade margins and backgrounds.
+  `pnpm e2e:desktop` runs the same matrix in a second instance of the
+  installed desktop app without touching the user's settings or graphs.
 - Manifest flags (`web`, `effect`, `supportsDB`, `supportsDBOnly`) moved
   inside the `logseq` object. Node 24 (`engines`, `.nvmrc`, CI).
 - Dead exports removed (`ICON_COLORS`, `getColorTokens`, `styles.ts`);

@@ -31,7 +31,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "e2e": "scripts/e2e/callouts-matrix.sh"
+    "e2e": "scripts/e2e/callouts-matrix.sh",
+    "e2e:desktop": "scripts/e2e/desktop-matrix.sh"
   },
   "dependencies": {
     "@logseq/libs": "^0.3.4"
