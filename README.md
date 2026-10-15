@@ -91,6 +91,7 @@ pnpm watch       # Rebuild on file changes
 pnpm dev         # Vite dev server at http://localhost:8080 (HMR + plugin auto-reload)
 pnpm typecheck   # TypeScript type check
 pnpm test        # Unit tests (vitest) with coverage thresholds
+pnpm e2e         # Live matrix against the Logseq web app at localhost:3001 (needs pnpm dev + playwright-cli)
 ```
 
 Requires Node 24 (`.nvmrc`) and pnpm (pinned via `packageManager`).
