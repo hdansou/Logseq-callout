@@ -19,6 +19,18 @@ export function blockSelector(uuid: string): string | null {
   return UUID_RE.test(uuid) ? `.ls-block[blockid="${uuid}"]` : null
 }
 
+/**
+ * Text for a badge pseudo-element, or '' when both parts are off. The glyph
+ * is a CSS hex escape, and CSS consumes one whitespace character after a hex
+ * escape, so the separator is two spaces to render one.
+ */
+function badgeContent(callout: CalloutDef, settings: PluginSettings): string {
+  const parts: string[] = []
+  if (settings.showIcon) parts.push(`\\${getIconCode(callout.icon)}`)
+  if (settings.showLabel) parts.push(callout.label)
+  return parts.join('  ')
+}
+
 function renderIconMode({ sel, t, settings }: RenderCtx): string[] {
   // GitHub-style colored left border. Cascade extends the same border to
   // children; the node icon itself is set imperatively via setBlockIcon.
@@ -59,12 +71,11 @@ ${sel}:has(> .block-children-container) > .block-main-container {
   }
 
   // Badge in the block control area.
-  if (settings.showIcon || settings.showLabel) {
-    const iconPart = settings.showIcon ? `\\${getIconCode(callout.icon)}` : ''
-    const labelPart = settings.showLabel ? ` ${callout.label}` : ''
+  const badge = badgeContent(callout, settings)
+  if (badge) {
     rules.push(`
 ${sel} > .block-main-container > .block-control-wrap::after {
-  content: "${iconPart}${labelPart}";
+  content: "${badge}";
   font-family: ${BADGE_FONT};
   font-size: 11px;
   font-weight: 600;
@@ -121,13 +132,11 @@ ${sel}:has(> .block-children-container) > .block-main-container {
   }
 
   // Floating badge with icon + label.
-  const badgeIcon = settings.showIcon ? `\\${getIconCode(callout.icon)}  ` : ''
-  const badgeLabel = settings.showLabel ? callout.label : ''
-  const badgeContent = badgeIcon + badgeLabel
-  if (badgeContent) {
+  const badge = badgeContent(callout, settings)
+  if (badge) {
     rules.push(`
 ${sel} > .block-main-container::before {
-  content: "${badgeContent}";
+  content: "${badge}";
   font-family: ${BADGE_FONT};
   position: absolute;
   top: -10px;

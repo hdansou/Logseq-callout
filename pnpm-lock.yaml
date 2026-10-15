@@ -20,6 +20,9 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4
     devDependencies:
+      '@tabler/icons-webfont':
+        specifier: 2.47.0
+        version: 2.47.0
       '@types/node':
         specifier: ^24.19.2
         version: 24.19.2
@@ -377,6 +380,12 @@ packages:
     resolution: {integrity: sha512-Nd/SgG27WoA9e+/TdK74KnHz852TLa94ovOYySo/yMPuTmpckK/jIF2jSwS3g7ELSKXK13/cVdmg1Z/DaCWKxA==}
     cpu: [x64]
     os: [win32]
+
+  '@tabler/icons-webfont@2.47.0':
+    resolution: {integrity: sha512-yfV9zDal0iYDmyGz4BS9IlhaaMydtLdyOrY2UAZToP65sVWj7AFIi6symNzsoBaX867xAZWVHdKcocah0BfSog==}
+
+  '@tabler/icons@2.47.0':
+    resolution: {integrity: sha512-4w5evLh+7FUUiA1GucvGj2ReX2TvOjEr4ejXdwL/bsjoSkof6r1gQmzqI+VHrE2CpJpB3al7bCTulOkFa/RcyA==}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -897,6 +906,12 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.60.2':
     optional: true
+
+  '@tabler/icons-webfont@2.47.0':
+    dependencies:
+      '@tabler/icons': 2.47.0
+
+  '@tabler/icons@2.47.0': {}
 
   '@types/chai@5.2.3':
     dependencies:

@@ -30,12 +30,14 @@
     "watch": "vite build --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --coverage",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "e2e": "scripts/e2e/callouts-matrix.sh"
   },
   "dependencies": {
     "@logseq/libs": "^0.3.4"
   },
   "devDependencies": {
+    "@tabler/icons-webfont": "2.47.0",
     "@types/node": "^24.19.2",
     "@vitest/coverage-v8": "^5.0.5",
     "terser": "^5.51.2",

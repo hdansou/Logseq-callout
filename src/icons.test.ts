@@ -84,3 +84,15 @@ describe('readBlockIcon', () => {
     expect(readBlockIcon({ uuid: 'x', [ICON_PROPERTY_KEY]: 'Bulb' })).toBeUndefined()
   })
 })
+
+describe('planIconOps after a plugin reload (prev is empty)', () => {
+  it('removes our icons from currently decorated blocks in a CSS-only mode', () => {
+    const plan = planIconOps({
+      prev: new Map(),
+      next: new Map([[A, 'warning'], [B, 'tip']]),
+      currentIcon: icons({ [A]: 'AlertTriangle', [B]: 'Custom' }),
+      nativeIcon: false,
+    })
+    expect(plan).toEqual({ set: [], remove: [A] })
+  })
+})

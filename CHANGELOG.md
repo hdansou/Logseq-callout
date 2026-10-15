@@ -7,6 +7,17 @@ All notable changes to **logseq-callout** are documented here. Format follows
 ## [Unreleased]
 
 ### Fixed
+- **Badge glyphs for 13 callouts were wrong or blank** (`#tip` showed a grid,
+  `#cite` nothing, `#question` an exclamation mark, …). The codepoint table
+  was written against a different Tabler release than the 2.47.0 webfont
+  Logseq bundles. Codes now match, and a unit test compares the table with
+  the pinned `@tabler/icons-webfont` so drift fails CI.
+- Inline badges rendered "⚠WARNING" with no gap: a CSS hex escape consumes
+  the following space. Badge text is built by one helper for both inline
+  and container modes, with no stray leading/trailing spaces in icon-only
+  or label-only badges.
+- Icons left behind by an earlier session are cleaned up on the first scan
+  in inline/container mode, not only after the next change.
 - **Icon/admonition modes no longer loop.** Every scan re-wrote the block icon,
   each write bumped the block's `updated-at`, which re-fired `DB.onChanged`,
   which scheduled another scan — forever. Icons are now set only when the
@@ -50,7 +61,11 @@ All notable changes to **logseq-callout** are documented here. Format follows
   floor guard (`src/__sdk_guard__.ts`).
 - `src/index.ts` split into a thin SDK adapter plus pure, unit-tested
   modules: `settings.ts`, `css.ts`, `detect.ts`, `icons.ts`. Vitest with
-  80% coverage thresholds runs in CI and before release.
+  80% coverage thresholds runs in CI and before release, including a matrix
+  over all 28 callouts × 32 settings permutations.
+- `pnpm e2e` (`scripts/e2e/callouts-matrix.sh`) drives the real Logseq web
+  app through every settings permutation and asserts each callout block's
+  computed styles: badge text, native icon, cascade margins and backgrounds.
 - Manifest flags (`web`, `effect`, `supportsDB`, `supportsDBOnly`) moved
   inside the `logseq` object. Node 24 (`engines`, `.nvmrc`, CI).
 - Dead exports removed (`ICON_COLORS`, `getColorTokens`, `styles.ts`);

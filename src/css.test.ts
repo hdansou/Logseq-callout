@@ -47,7 +47,7 @@ describe('generateDynamicCSS', () => {
       const css = generateDynamicCSS(one, withSettings({ displayMode: 'inline' }))
       expect(css).toContain(`[blockid="${A}"] > .block-main-container {`)
       expect(css).toContain('.block-control-wrap::after')
-      expect(css).toContain('content: "\\ea06 Warning"')
+      expect(css).toContain('content: "\\ea06  Warning"') // two spaces: a CSS hex escape eats the first
       expect(css).toContain('html.dark')
       expect(braceBalance(css)).toBe(0)
     })
@@ -59,7 +59,7 @@ describe('generateDynamicCSS', () => {
 
     it('renders icon-only and label-only badges', () => {
       expect(generateDynamicCSS(one, withSettings({ showLabel: false }))).toContain('content: "\\ea06"')
-      expect(generateDynamicCSS(one, withSettings({ showIcon: false }))).toContain('content: " Warning"')
+      expect(generateDynamicCSS(one, withSettings({ showIcon: false }))).toContain('content: "Warning"')
     })
 
     it('styles children only when cascade is on', () => {
@@ -76,6 +76,11 @@ describe('generateDynamicCSS', () => {
       expect(css).toContain('position: relative')
       expect(css).toContain('content: "\\ea06  Warning"')
       expect(braceBalance(css)).toBe(0)
+    })
+
+    it('renders icon-only and label-only badges without stray spaces', () => {
+      expect(generateDynamicCSS(one, withSettings({ displayMode: 'container', showLabel: false }))).toContain('content: "\\ea06"')
+      expect(generateDynamicCSS(one, withSettings({ displayMode: 'container', showIcon: false }))).toContain('content: "Warning"')
     })
 
     it('omits the badge when icon and label are off', () => {

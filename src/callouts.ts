@@ -89,35 +89,38 @@ export const COLOR_GROUPS: Record<ColorGroup, ColorTokens> = {
 }
 
 /**
- * Tabler icon unicode code points (hex, without 0x prefix).
- * Used in CSS content property as \\eXXXX.
+ * Tabler icon unicode code points (hex, without 0x prefix), used in CSS
+ * `content` as \\eXXXX. They must match the Tabler webfont *Logseq* bundles
+ * (2.47.0, `resources/css/tabler-icons.min.css`); codepoints move between
+ * Tabler releases. `callouts.test.ts` checks the table against the pinned
+ * `@tabler/icons-webfont` devDependency — bump both together.
  */
 export const TABLER_ICON_CODES: Record<string, string> = {
-  'quote':            'b10',
-  'blockquote':       'e9a0',
+  'quote':            'efbe',
+  'blockquote':       'ee09',
   'alert-triangle':   'ea06',
   'bell-ringing':     'ed07',
-  'help-circle':      'efb4',
-  'lifebuoy':         'ea5a',
-  'message-question': 'f4f2',
+  'help-circle':      'f91d',
+  'lifebuoy':         'eadd',
+  'message-question': 'f98b',
   'circle-check':     'ea67',
   'check':            'ea5e',
-  'checklist':        'edba',
-  'file-text':        'eaa6',
+  'checklist':        'f074',
+  'file-text':        'eaa2',
   'list':             'eb6b',
   'bolt':             'ea38',
-  'urgent':           'f0cd',
-  'bulb':             'ea3c',
+  'urgent':           'eb48',
+  'bulb':             'ea51',
   'pencil':           'eb04',
   'alert-octagon':    'ecc6',
   'code':             'ea77',
   'search':           'eb1c',
-  'math':             'ed5e',
-  'pin':              'ea44',
+  'math':             'ebeb',
+  'pin':              'ec9c',
   'file-export':      'ede9',
-  'terminal':         'ebb2',
+  'terminal':         'ebdc',
   'align-center':     'ea07',
-  'message':          'ebb4',
+  'message':          'eaef',
 }
 
 export function getIconCode(iconName: string): string {

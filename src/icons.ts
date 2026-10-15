@@ -35,8 +35,10 @@ export function readBlockIcon(block: Record<string, unknown> | undefined): Block
  * Every property write bumps the block's `updated-at` and re-enters
  * `DB.onChanged`, so writing an icon the block already has would loop
  * forever. Icons are only set when they differ, and only removed when the
- * block still carries the icon *we* chose for the tag it used to have — a
- * user-chosen icon is never touched.
+ * block still carries the icon *we* chose for its (current or former) tag —
+ * a user-chosen icon is never touched. In CSS-only modes the currently
+ * decorated blocks are candidates too, so icons left behind by an earlier
+ * session are cleaned up on the first scan.
  */
 export function planIconOps({ prev, next, currentIcon, nativeIcon }: IconPlanInput): IconPlan {
   const plan: IconPlan = { set: [], remove: [] }
@@ -48,8 +50,8 @@ export function planIconOps({ prev, next, currentIcon, nativeIcon }: IconPlanInp
     }
   }
 
-  for (const [uuid, tag] of prev) {
-    if (nativeIcon && next.has(uuid)) continue
+  const candidates = nativeIcon ? [...prev].filter(([uuid]) => !next.has(uuid)) : [...new Map([...prev, ...next])]
+  for (const [uuid, tag] of candidates) {
     const ours = getCallout(tag)?.iconId
     if (ours && currentIcon(uuid)?.id === ours) plan.remove.push(uuid)
   }
